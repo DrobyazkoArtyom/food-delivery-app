@@ -19,7 +19,7 @@ public class KitchenService {
     }
 
     public KitchenDto createKitchen(CreateKitchenRequest createKitchenRequest) {
-        Kitchen kitchen = new Kitchen(createKitchenRequest.getName(), createKitchenRequest.getAddress());
+        Kitchen kitchen = new Kitchen(createKitchenRequest.name(), createKitchenRequest.address());
         kitchen = repository.save(kitchen);
         return new KitchenDto(kitchen.getId(), kitchen.getName(), kitchen.getAddress());
     }

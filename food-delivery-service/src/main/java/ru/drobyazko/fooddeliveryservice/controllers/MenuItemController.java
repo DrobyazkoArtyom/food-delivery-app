@@ -8,7 +8,8 @@ import ru.drobyazko.fooddeliveryservice.services.MenuItemService;
 
 import java.util.List;
 
-@RestController("/menuItems")
+@RestController
+@RequestMapping("/menuItems")
 public class MenuItemController {
     private final MenuItemService menuItemService;
 
