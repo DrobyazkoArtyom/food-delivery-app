@@ -10,7 +10,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class PostgreSQLContainerConfiguration {
     @Bean
     PostgreSQLContainer postgreSQLContainer() {
-        PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
+        PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:18.1-alpine");
         postgreSQLContainer.start();
         return postgreSQLContainer;
     }

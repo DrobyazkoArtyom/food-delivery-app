@@ -6,7 +6,7 @@ import ru.drobyazko.fooddeliveryservice.enums.OrderStatus;
 import java.util.Set;
 
 @Entity
-@Table(name = "order")
+@Table(name = "customer_order")
 public class OrderEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

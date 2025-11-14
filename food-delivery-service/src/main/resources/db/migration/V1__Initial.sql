@@ -2,8 +2,7 @@ CREATE TABLE kitchen
 (
     id      BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name    VARCHAR NOT NULL,
-    address VARCHAR NOT NULL,
-    CONSTRAINT pk_kitchen PRIMARY KEY (id)
+    address VARCHAR NOT NULL
 );
 
 CREATE TABLE menu_item
@@ -13,26 +12,23 @@ CREATE TABLE menu_item
     name        VARCHAR NOT NULL,
     description VARCHAR,
     price       numeric NOT NULL,
-    hidden      BOOLEAN NOT NULL,
-    CONSTRAINT pk_menu_item PRIMARY KEY (id)
+    hidden      BOOLEAN NOT NULL
 );
 
-CREATE TABLE order
+CREATE TABLE customer_order
 (
     id      BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     user_id BIGINT  NOT NULL,
-    status  VARCHAR NOT NULL,
-    CONSTRAINT pk_order PRIMARY KEY (id)
+    status  VARCHAR NOT NULL
 );
 
 CREATE TABLE order_item
 (
     id           BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     menu_item_id BIGINT  NOT NULL,
-    order_id     BIGINT REFERENCES order (id),
+    order_id     BIGINT REFERENCES customer_order (id),
     name         VARCHAR NOT NULL,
     description  VARCHAR,
     unit_price   numeric NOT NULL,
-    quantity     INTEGER NOT NULL,
-    CONSTRAINT pk_order_item PRIMARY KEY (id)
+    quantity     INTEGER NOT NULL
 );

@@ -1,17 +1,17 @@
 package ru.drobyazko.fooddeliveryservice.controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.drobyazko.fooddeliveryservice.dtos.CreateKitchen;
+import ru.drobyazko.fooddeliveryservice.dtos.Kitchen;
 import ru.drobyazko.fooddeliveryservice.dtos.requests.CreateKitchenRequest;
-import ru.drobyazko.fooddeliveryservice.dtos.KitchenDto;
-import ru.drobyazko.fooddeliveryservice.dtos.responses.CreateKitchenResponse;
 import ru.drobyazko.fooddeliveryservice.dtos.responses.GetKitchenResponse;
 import ru.drobyazko.fooddeliveryservice.services.KitchenService;
 
 import java.util.List;
 
-//TODO: add validation and caching, return ResponseEntities(not sure yet)
+//TODO: add caching
 @RestController
 @RequestMapping("/kitchens")
 public class KitchenController {
@@ -21,39 +21,36 @@ public class KitchenController {
         this.kitchenService = kitchenService;
     }
 
-    //TODO: continue working on KitchenIT and implementing this functionality according to tests
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Long createKitchen(CreateKitchenRequest createKitchenRequest) {
-        return 1L;
-        //return kitchenService.createKitchen(createKitchenRequest);
+    public Long createKitchen(@RequestBody @Valid CreateKitchenRequest createKitchenRequest) {
+        CreateKitchen createKitchen = new CreateKitchen(createKitchenRequest.name(), createKitchenRequest.address());
+        Kitchen kitchen = kitchenService.createKitchen(createKitchen);
+        return kitchen.getId();
     }
 
+    @GetMapping("/{id}")
+    public GetKitchenResponse getKitchen(@PathVariable("id") Long id) {
+        Kitchen kitchen = kitchenService.getKitchen(id);
+        return new GetKitchenResponse(kitchen.getId(), kitchen.getName(), kitchen.getAddress());
+    }
 
-//    @PostMapping
-//    public ResponseEntity<KitchenDto> createKitchen(CreateKitchenRequest createKitchenRequest) {
-//        return new ResponseEntity<>(HttpStatus.CREATED);
-//        return kitchenService.createKitchen(createKitchenRequest);
-//    }
-
-    //TODO: continue working on KitchenIT and implementing this functionality according to tests
     @GetMapping
-    public GetKitchenResponse getKitchen(@RequestParam Long id) {
-        return new GetKitchenResponse(1L, "a", "a");
+    public List<GetKitchenResponse> getAllKitchens() {
+        List<Kitchen> kitchens = kitchenService.getAllKitchens();
+        return kitchens.stream()
+                .map(kitchen -> new GetKitchenResponse(kitchen.getId(), kitchen.getName(), kitchen.getAddress()))
+                .toList();
     }
-
-//    @GetMapping
-//    public List<KitchenDto> getKitchens() {
-//        return kitchenService.getKitchens();
+//TODO: need this?
+//    @PutMapping
+//    public void updateKitchen() {
+//
 //    }
 
-    @PutMapping
-    public void updateKitchen() {
-
-    }
-
-    @DeleteMapping
-    public void deleteKitchen(Long id) {
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteKitchen(@PathVariable("id") Long id) {
         kitchenService.deleteKitchen(id);
     }
 }

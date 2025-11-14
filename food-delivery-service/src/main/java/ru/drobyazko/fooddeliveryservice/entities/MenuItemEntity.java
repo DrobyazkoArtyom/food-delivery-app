@@ -6,13 +6,13 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "menu_item")
-public class MenuItem {
+public class MenuItemEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
-    private Kitchen kitchen;
+    private KitchenEntity kitchenEntity;
     @Column(nullable = false)
     private String name;
     @Column(nullable = true)
@@ -22,11 +22,11 @@ public class MenuItem {
     @Column(nullable = false)
     private Boolean hidden = false;
 
-    protected MenuItem() {
+    protected MenuItemEntity() {
     }
 
-    public MenuItem(Kitchen kitchen, String name, String description, BigDecimal price) {
-        this.kitchen = kitchen;
+    public MenuItemEntity(KitchenEntity kitchenEntity, String name, String description, BigDecimal price) {
+        this.kitchenEntity = kitchenEntity;
         this.name = name;
         this.description = description;
         this.price = price;
@@ -36,8 +36,8 @@ public class MenuItem {
         return id;
     }
 
-    public Kitchen getKitchen() {
-        return kitchen;
+    public KitchenEntity getKitchenEntity() {
+        return kitchenEntity;
     }
 
     public String getName() {
