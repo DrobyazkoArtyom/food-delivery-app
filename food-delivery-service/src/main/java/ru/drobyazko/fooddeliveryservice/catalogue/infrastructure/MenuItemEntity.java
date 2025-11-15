@@ -1,4 +1,4 @@
-package ru.drobyazko.fooddeliveryservice.entities;
+package ru.drobyazko.fooddeliveryservice.catalogue.infrastructure;
 
 import jakarta.persistence.*;
 
@@ -11,7 +11,7 @@ public class MenuItemEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "kitchen_id", nullable = false)
     private KitchenEntity kitchenEntity;
     @Column(nullable = false)
     private String name;

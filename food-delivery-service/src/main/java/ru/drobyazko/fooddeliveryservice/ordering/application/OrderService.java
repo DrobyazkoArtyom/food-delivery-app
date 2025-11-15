@@ -2,7 +2,7 @@ package ru.drobyazko.fooddeliveryservice.ordering.application;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.drobyazko.fooddeliveryservice.dtos.MenuItemDto;
+import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.MenuItem;
 import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.CreateOrderRequest;
 import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.MenuItemIdQuantity;
 import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.Order;
@@ -11,7 +11,7 @@ import ru.drobyazko.fooddeliveryservice.ordering.infrastructure.OrderEntity;
 import ru.drobyazko.fooddeliveryservice.ordering.infrastructure.OrderItemEntity;
 import ru.drobyazko.fooddeliveryservice.ordering.infrastructure.OrderItemRepository;
 import ru.drobyazko.fooddeliveryservice.ordering.infrastructure.OrderRepository;
-import ru.drobyazko.fooddeliveryservice.services.MenuItemService;
+import ru.drobyazko.fooddeliveryservice.catalogue.application.MenuItemService;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,20 +35,20 @@ public class OrderService {
 
         Set<OrderItem> orderItems = new HashSet<>();
         for (MenuItemIdQuantity menuItemIdQuantity : order.getMenuItemIdQuantities()) {
-            MenuItemDto menuItemDto = menuItemService.getMenuItem(menuItemIdQuantity.getMenuItemId());
+            MenuItem menuItem = menuItemService.getMenuItem(menuItemIdQuantity.getMenuItemId());
             // this is for returning to user without reading database after saving
             OrderItem orderItem = new OrderItem(
-                    menuItemDto.getName(),
-                    menuItemDto.getDescription(),
-                    menuItemDto.getPrice(),
+                    menuItem.getName(),
+                    menuItem.getDescription(),
+                    menuItem.getPrice(),
                     menuItemIdQuantity.getQuantity());
             orderItems.add(orderItem);
             // this is for saving to database
             OrderItemEntity orderItemEntity = new OrderItemEntity(
                     orderEntity,
-                    menuItemDto.getName(),
-                    menuItemDto.getDescription(),
-                    menuItemDto.getPrice(),
+                    menuItem.getName(),
+                    menuItem.getDescription(),
+                    menuItem.getPrice(),
                     menuItemIdQuantity.getQuantity());
             orderItemRepository.save(orderItemEntity);
         }

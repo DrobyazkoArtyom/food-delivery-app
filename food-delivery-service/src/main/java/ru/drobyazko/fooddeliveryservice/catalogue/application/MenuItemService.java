@@ -1,13 +1,10 @@
-package ru.drobyazko.fooddeliveryservice.services;
+package ru.drobyazko.fooddeliveryservice.catalogue.application;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.drobyazko.fooddeliveryservice.dtos.requests.CreateMenuItemRequest;
-import ru.drobyazko.fooddeliveryservice.dtos.MenuItemDto;
-import ru.drobyazko.fooddeliveryservice.entities.KitchenEntity;
-import ru.drobyazko.fooddeliveryservice.entities.MenuItemEntity;
-import ru.drobyazko.fooddeliveryservice.repositories.KitchenRepository;
-import ru.drobyazko.fooddeliveryservice.repositories.MenuItemRepository;
+import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.CreateMenuItem;
+import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.MenuItem;
+import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.*;
 
 import java.util.List;
 
@@ -22,9 +19,9 @@ public class MenuItemService {
         this.kitchenRepository = kitchenRepository;
     }
 
-    public MenuItemDto getMenuItem(Long menuItemId) {
+    public MenuItem getMenuItem(Long menuItemId) {
         MenuItemEntity menuItemEntity = menuItemRepository.findById(menuItemId).orElseThrow();
-        return new MenuItemDto(
+        return new MenuItem(
                 menuItemEntity.getId(),
                 menuItemEntity.getKitchenEntity().getId(),
                 menuItemEntity.getName(),
@@ -32,29 +29,31 @@ public class MenuItemService {
                 menuItemEntity.getPrice());
     }
 
-    public MenuItemDto createMenuItem(CreateMenuItemRequest createMenuItemRequest) {
-        KitchenEntity kitchenEntity = kitchenRepository.getReferenceById(createMenuItemRequest.getKitchenId());
-        MenuItemEntity menuItemEntity = new MenuItemEntity(
-                kitchenEntity,
-                createMenuItemRequest.getName(),
-                createMenuItemRequest.getDescription(),
-                createMenuItemRequest.getPrice());
+    public MenuItem createMenuItem(CreateMenuItem createMenuItem) {
+        KitchenEntity kitchenEntity =
+                kitchenRepository.findById(createMenuItem.kitchenId()).orElseThrow(KitchenNotFoundException::new);
+        MenuItemEntity menuItemEntity =
+                new MenuItemEntity(
+                        kitchenEntity,
+                        createMenuItem.name(),
+                        createMenuItem.description(),
+                        createMenuItem.price());
         menuItemEntity = menuItemRepository.save(menuItemEntity);
-        return new MenuItemDto(
+        return new MenuItem(
                 menuItemEntity.getId(),
-                createMenuItemRequest.getKitchenId(),
+                createMenuItem.kitchenId(),
                 menuItemEntity.getName(),
                 menuItemEntity.getDescription(),
                 menuItemEntity.getPrice());
     }
 
-    public List<MenuItemDto> getMenuItemsByKitchenId(Long kitchenId) {
+    public List<MenuItem> getMenuItemsByKitchenId(Long kitchenId) {
         KitchenEntity kitchenEntity = kitchenRepository.getReferenceById(kitchenId);
         return menuItemRepository
                 .findByKitchenEntity(kitchenEntity)
                 .stream()
                 .map(menuItemEntity ->
-                        new MenuItemDto(
+                        new MenuItem(
                                 menuItemEntity.getId(),
                                 kitchenId,
                                 menuItemEntity.getName(),

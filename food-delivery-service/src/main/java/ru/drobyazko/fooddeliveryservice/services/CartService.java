@@ -10,7 +10,7 @@
 //import ru.drobyazko.fooddeliveryservice.entities.MenuItem;
 //import ru.drobyazko.fooddeliveryservice.repositories.CartItemRepository;
 //import ru.drobyazko.fooddeliveryservice.repositories.CartRepository;
-//import ru.drobyazko.fooddeliveryservice.repositories.MenuItemRepository;
+//import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.MenuItemRepository;
 //
 //import java.util.Collections;
 //import java.util.List;

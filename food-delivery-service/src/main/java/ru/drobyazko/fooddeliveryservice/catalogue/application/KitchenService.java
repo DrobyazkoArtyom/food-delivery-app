@@ -1,12 +1,12 @@
-package ru.drobyazko.fooddeliveryservice.services;
+package ru.drobyazko.fooddeliveryservice.catalogue.application;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.drobyazko.fooddeliveryservice.dtos.CreateKitchen;
-import ru.drobyazko.fooddeliveryservice.dtos.Kitchen;
-import ru.drobyazko.fooddeliveryservice.entities.KitchenEntity;
-import ru.drobyazko.fooddeliveryservice.exceptions.KitchenNotFoundException;
-import ru.drobyazko.fooddeliveryservice.repositories.KitchenRepository;
+import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.CreateKitchen;
+import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.Kitchen;
+import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.KitchenEntity;
+import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.KitchenNotFoundException;
+import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.KitchenRepository;
 
 import java.util.List;
 
@@ -32,8 +32,7 @@ public class KitchenService {
 
     public List<Kitchen> getAllKitchens() {
         List<KitchenEntity> kitchenEntities = repository.findAll();
-        return kitchenEntities
-                .stream()
+        return kitchenEntities.stream()
                 .map(kitchen -> new Kitchen(kitchen.getId(), kitchen.getName(), kitchen.getAddress()))
                 .toList();
     }

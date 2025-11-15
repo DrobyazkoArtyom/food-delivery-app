@@ -10,13 +10,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.reactive.server.WebTestClient.*;
-import ru.drobyazko.fooddeliveryservice.dtos.requests.CreateKitchenRequest;
-import ru.drobyazko.fooddeliveryservice.dtos.responses.GetKitchenResponse;
+import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenRequest;
+import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenResponse;
+import ru.drobyazko.fooddeliveryservice.catalogue.api.GetKitchenResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+//TODO: some operations are duplicated, can create a separate class for them (for example a CreateKitchenRequest is done in every test)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(PostgreSQLContainerConfiguration.class)
 class KitchenIT {
@@ -27,13 +28,21 @@ class KitchenIT {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void whenICreateAKitchen() {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("testName", "testAddress");
-        ResponseSpec response = webTestClient.post()
-                .uri("/kitchens")
-                .bodyValue(createKitchenRequest)
-                .exchange();
+        ResponseSpec responseSpec =
+                webTestClient.post()
+                        .uri("/kitchens")
+                        .bodyValue(createKitchenRequest)
+                        .exchange();
 
-        itShouldReturnCreatedStatus(response);
-        itShouldReturnAnId(response);
+        itShouldReturnCreatedStatus(responseSpec);
+
+        CreateKitchenResponse response =
+                responseSpec.expectBody(CreateKitchenResponse.class)
+                        .returnResult()
+                        .getResponseBody();
+
+        itShouldAllocateAnId(response);
+        itShouldReturnTheSameKitchen(createKitchenRequest, response);
     }
 
     private void itShouldReturnCreatedStatus(ResponseSpec responseSpec) {
@@ -41,20 +50,23 @@ class KitchenIT {
                 .isCreated();
     }
 
-    private void itShouldReturnAnId(ResponseSpec responseSpec) {
-        responseSpec.expectBody(Long.class)
-                .value(id -> {
-                    Assertions.assertNotNull(id);
-                });
+    private void itShouldAllocateAnId(CreateKitchenResponse response) {
+        Assertions.assertNotNull(response.id());
     }
 
+    private void itShouldReturnTheSameKitchen(CreateKitchenRequest createKitchenRequest, CreateKitchenResponse response) {
+        Assertions.assertEquals(createKitchenRequest.name(), response.name());
+        Assertions.assertEquals(createKitchenRequest.address(), response.address());
+    }
+
+    //TODO: should probably make this one a unit test in the controller slice
     @Test
     void WhenICreateAnInvalidKitchen() {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("", null);
-        ResponseSpec response = webTestClient.post()
-                .uri("/kitchens")
-                .bodyValue(createKitchenRequest)
-                .exchange();
+        ResponseSpec response =
+                webTestClient.post().uri("/kitchens")
+                        .bodyValue(createKitchenRequest)
+                        .exchange();
 
         itShouldReturnBadRequestStatus(response);
     }
@@ -67,23 +79,29 @@ class KitchenIT {
     private static Stream<CreateKitchenRequest> createKitchenRequestStream() {
         return Stream.of(
                 new CreateKitchenRequest("testName", "testAddress"),
-                new CreateKitchenRequest("testNameSecond", "testAddressSecond"));
+                new CreateKitchenRequest("testNameSecond", "testAddressSecond")
+        );
     }
 
     @ParameterizedTest
     @MethodSource("createKitchenRequestStream")
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenICreateAKitchen_WhenITryToGetAKitchen(CreateKitchenRequest createKitchenRequest) {
-        ResponseSpec createKitchenResponseSpec = webTestClient.post()
-                .uri("/kitchens")
-                .bodyValue(createKitchenRequest)
-                .exchange();
+        ResponseSpec createKitchenResponseSpec =
+                webTestClient.post()
+                        .uri("/kitchens")
+                        .bodyValue(createKitchenRequest)
+                        .exchange();
 
-        Long kitchenId = createKitchenResponseSpec.expectBody(Long.class).returnResult().getResponseBody();
+        CreateKitchenResponse createKitchenResponse =
+                createKitchenResponseSpec.expectBody(CreateKitchenResponse.class)
+                        .returnResult()
+                        .getResponseBody();
 
-        ResponseSpec getKitchenResponseSpec = webTestClient.get()
-                .uri("/kitchens/" + kitchenId)
-                .exchange();
+        ResponseSpec getKitchenResponseSpec =
+                webTestClient.get()
+                        .uri("/kitchens/" + createKitchenResponse.id())
+                        .exchange();
 
         itShouldReturnOkStatus(getKitchenResponseSpec);
         itShouldReturnTheSameKitchen(getKitchenResponseSpec, createKitchenRequest);
@@ -109,36 +127,37 @@ class KitchenIT {
                 new CreateKitchenRequest("testName", "testAddress"),
                 new CreateKitchenRequest("testNameSecond", "testAddressSecond")
         );
-        List<GetKitchenResponse> getKitchenResponses = new ArrayList<>();
         for (CreateKitchenRequest createKitchenRequest : createKitchenRequestsList) {
-            ResponseSpec createKitchenResponseSpec = webTestClient.post()
-                    .uri("/kitchens")
-                    .bodyValue(createKitchenRequest)
-                    .exchange();
-
-            getKitchenResponses.add(buildGetKitchenResponse(
-                    createKitchenResponseSpec.expectBody(Long.class).returnResult().getResponseBody(),
-                    createKitchenRequest));
+            ResponseSpec createKitchenResponseSpec =
+                    webTestClient.post()
+                            .uri("/kitchens")
+                            .bodyValue(createKitchenRequest)
+                            .exchange();
         }
 
-        ResponseSpec getAllKitchensResponseSpec = webTestClient.get()
-                .uri("/kitchens")
-                .exchange();
+        ResponseSpec getAllKitchensResponseSpec =
+                webTestClient.get()
+                        .uri("/kitchens")
+                        .exchange();
 
         itShouldReturnOkStatus(getAllKitchensResponseSpec);
-        itShouldReturnAListOfSameKitchens(getAllKitchensResponseSpec, getKitchenResponses);
+
+        itShouldReturnAListOfSameKitchens(getAllKitchensResponseSpec, createKitchenRequestsList);
     }
 
-    private GetKitchenResponse buildGetKitchenResponse(Long id, CreateKitchenRequest createKitchenRequest) {
-        return new GetKitchenResponse(id, createKitchenRequest.name(), createKitchenRequest.address());
+    private GetKitchenResponse buildGetKitchenResponse(CreateKitchenResponse createKitchenResponse,
+                                                       CreateKitchenRequest createKitchenRequest) {
+        return new GetKitchenResponse(createKitchenResponse.id(), createKitchenRequest.name(), createKitchenRequest.address());
     }
 
     private void itShouldReturnAListOfSameKitchens(ResponseSpec responseSpec,
-                                                   List<GetKitchenResponse> getKitchenResponsesExpected) {
+                                                   List<CreateKitchenRequest> createKitchenRequests) {
         responseSpec.expectBodyList(GetKitchenResponse.class)
                 .value(getKitchenResponsesActual -> {
-                    Assertions.assertEquals(getKitchenResponsesExpected.get(0), getKitchenResponsesActual.get(0));
-                    Assertions.assertEquals(getKitchenResponsesExpected.get(1), getKitchenResponsesActual.get(1));
+                    Assertions.assertEquals(createKitchenRequests.get(0).name(), getKitchenResponsesActual.get(0).name());
+                    Assertions.assertEquals(createKitchenRequests.get(0).address(), getKitchenResponsesActual.get(0).address());
+                    Assertions.assertEquals(createKitchenRequests.get(1).name(), getKitchenResponsesActual.get(1).name());
+                    Assertions.assertEquals(createKitchenRequests.get(1).address(), getKitchenResponsesActual.get(1).address());
                 });
     }
 
@@ -146,22 +165,28 @@ class KitchenIT {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenICreatedAKitchen_WhenIDeleteAKitchen() {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("testName", "testAddress");
-        ResponseSpec createKitchenResponseSpec = webTestClient.post()
-                .uri("/kitchens")
-                .bodyValue(createKitchenRequest)
-                .exchange();
+        ResponseSpec createKitchenResponseSpec =
+                webTestClient.post()
+                        .uri("/kitchens")
+                        .bodyValue(createKitchenRequest)
+                        .exchange();
 
-        Long kitchenId = createKitchenResponseSpec.expectBody(Long.class).returnResult().getResponseBody();
+        CreateKitchenResponse createKitchenResponse =
+                createKitchenResponseSpec.expectBody(CreateKitchenResponse.class)
+                        .returnResult()
+                        .getResponseBody();
 
-        ResponseSpec deleteKitchenResponseSpec = webTestClient.delete()
-                .uri("/kitchens/" + kitchenId)
-                .exchange();
+        ResponseSpec deleteKitchenResponseSpec =
+                webTestClient.delete()
+                        .uri("/kitchens/" + createKitchenResponse.id())
+                        .exchange();
 
         itShouldReturnNoContentStatus(deleteKitchenResponseSpec);
 
-        ResponseSpec getKitchenResponseSpec = webTestClient.get()
-                .uri("/kitchens/" + kitchenId)
-                .exchange();
+        ResponseSpec getKitchenResponseSpec =
+                webTestClient.get()
+                        .uri("/kitchens/" + createKitchenResponse.id())
+                        .exchange();
 
         itShouldReturnNotFound(getKitchenResponseSpec);
     }

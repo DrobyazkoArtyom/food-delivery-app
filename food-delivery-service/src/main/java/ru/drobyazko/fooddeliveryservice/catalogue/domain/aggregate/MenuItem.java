@@ -1,18 +1,24 @@
-package ru.drobyazko.fooddeliveryservice.dtos.requests;
+package ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate;
 
 import java.math.BigDecimal;
 
-public class CreateMenuItemRequest {
+public class MenuItem {
+    private final Long id;
     private final Long kitchenId;
     private final String name;
     private final String description;
     private final BigDecimal price;
 
-    public CreateMenuItemRequest(Long kitchenId, String name, String description, BigDecimal price) {
+    public MenuItem(Long id, Long kitchenId, String name, String description, BigDecimal price) {
+        this.id = id;
         this.kitchenId = kitchenId;
         this.name = name;
         this.description = description;
         this.price = price;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public Long getKitchenId() {

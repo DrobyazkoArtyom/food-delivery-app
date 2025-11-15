@@ -1,8 +1,6 @@
-package ru.drobyazko.fooddeliveryservice.repositories;
+package ru.drobyazko.fooddeliveryservice.catalogue.infrastructure;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.drobyazko.fooddeliveryservice.entities.KitchenEntity;
-import ru.drobyazko.fooddeliveryservice.entities.MenuItemEntity;
 
 import java.util.List;
 

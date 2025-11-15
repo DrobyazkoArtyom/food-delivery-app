@@ -1,4 +1,4 @@
-package ru.drobyazko.fooddeliveryservice.dtos;
+package ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate;
 
 public class Kitchen {
     private final Long id;

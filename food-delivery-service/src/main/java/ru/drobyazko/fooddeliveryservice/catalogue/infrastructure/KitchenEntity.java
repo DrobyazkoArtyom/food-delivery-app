@@ -1,4 +1,4 @@
-package ru.drobyazko.fooddeliveryservice.entities;
+package ru.drobyazko.fooddeliveryservice.catalogue.infrastructure;
 
 import jakarta.persistence.*;
 

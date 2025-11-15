@@ -1,13 +1,11 @@
-package ru.drobyazko.fooddeliveryservice.controllers;
+package ru.drobyazko.fooddeliveryservice.catalogue.api;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.drobyazko.fooddeliveryservice.dtos.CreateKitchen;
-import ru.drobyazko.fooddeliveryservice.dtos.Kitchen;
-import ru.drobyazko.fooddeliveryservice.dtos.requests.CreateKitchenRequest;
-import ru.drobyazko.fooddeliveryservice.dtos.responses.GetKitchenResponse;
-import ru.drobyazko.fooddeliveryservice.services.KitchenService;
+import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.CreateKitchen;
+import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.Kitchen;
+import ru.drobyazko.fooddeliveryservice.catalogue.application.KitchenService;
 
 import java.util.List;
 
@@ -23,10 +21,10 @@ public class KitchenController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Long createKitchen(@RequestBody @Valid CreateKitchenRequest createKitchenRequest) {
+    public CreateKitchenResponse createKitchen(@RequestBody @Valid CreateKitchenRequest createKitchenRequest) {
         CreateKitchen createKitchen = new CreateKitchen(createKitchenRequest.name(), createKitchenRequest.address());
         Kitchen kitchen = kitchenService.createKitchen(createKitchen);
-        return kitchen.getId();
+        return new CreateKitchenResponse(kitchen.getId(), kitchen.getName(), kitchen.getAddress());
     }
 
     @GetMapping("/{id}")
@@ -42,11 +40,6 @@ public class KitchenController {
                 .map(kitchen -> new GetKitchenResponse(kitchen.getId(), kitchen.getName(), kitchen.getAddress()))
                 .toList();
     }
-//TODO: need this?
-//    @PutMapping
-//    public void updateKitchen() {
-//
-//    }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
