@@ -19,16 +19,6 @@ public class MenuItemService {
         this.kitchenRepository = kitchenRepository;
     }
 
-    public MenuItem getMenuItem(Long menuItemId) {
-        MenuItemEntity menuItemEntity = menuItemRepository.findById(menuItemId).orElseThrow();
-        return new MenuItem(
-                menuItemEntity.getId(),
-                menuItemEntity.getKitchenEntity().getId(),
-                menuItemEntity.getName(),
-                menuItemEntity.getDescription(),
-                menuItemEntity.getPrice());
-    }
-
     public MenuItem createMenuItem(CreateMenuItem createMenuItem) {
         KitchenEntity kitchenEntity =
                 kitchenRepository.findById(createMenuItem.kitchenId()).orElseThrow(KitchenNotFoundException::new);
@@ -42,6 +32,16 @@ public class MenuItemService {
         return new MenuItem(
                 menuItemEntity.getId(),
                 createMenuItem.kitchenId(),
+                menuItemEntity.getName(),
+                menuItemEntity.getDescription(),
+                menuItemEntity.getPrice());
+    }
+
+    public MenuItem getMenuItem(Long id) {
+        MenuItemEntity menuItemEntity = menuItemRepository.findById(id).orElseThrow(MenuItemNotFoundException::new);
+        return new MenuItem(
+                menuItemEntity.getId(),
+                menuItemEntity.getKitchenEntity().getId(),
                 menuItemEntity.getName(),
                 menuItemEntity.getDescription(),
                 menuItemEntity.getPrice());

@@ -8,10 +8,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.reactive.server.WebTestClient.*;
-import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenRequest;
-import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenResponse;
-import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateMenuItemRequest;
-import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateMenuItemResponse;
+import ru.drobyazko.fooddeliveryservice.catalogue.api.*;
 
 import java.math.BigDecimal;
 
@@ -24,7 +21,12 @@ class MenuItemIT {
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenIHaveCreatedAKitchen_WhenITryToCreateAMenuItem() {
-        CreateKitchenResponse createKitchenResponse = createKitchen();
+        CreateKitchenRequest createKitchenRequest =
+                new CreateKitchenRequest("testName", "testAddress");
+        ResponseSpec createKitchenResponseSpec =
+                KitchenApiHelper.sendCreateKitchenRequest(webTestClient, createKitchenRequest);
+        CreateKitchenResponse createKitchenResponse =
+                KitchenApiHelper.mapCreateKitchenResponse(createKitchenResponseSpec);
 
         CreateMenuItemRequest createMenuItemRequest =
                 new CreateMenuItemRequest(
@@ -34,32 +36,15 @@ class MenuItemIT {
                         new BigDecimal(1));
 
         ResponseSpec createMenuItemResponseSpec =
-                webTestClient.post()
-                        .uri("/menuItems")
-                        .bodyValue(createMenuItemRequest)
-                        .exchange();
+                MenuItemApiHelper.sendCreateMenuItemRequest(webTestClient, createMenuItemRequest);
 
         itShouldReturnCreatedStatus(createMenuItemResponseSpec);
 
         CreateMenuItemResponse createMenuItemResponse =
-                createMenuItemResponseSpec.expectBody(CreateMenuItemResponse.class)
-                        .returnResult()
-                        .getResponseBody();
+                MenuItemApiHelper.mapCreateMenuItemResponse(createMenuItemResponseSpec);
 
         itShouldAllocateAnId(createMenuItemResponse);
         itShouldReturnTheSameMenuItem(createMenuItemRequest, createMenuItemResponse);
-    }
-
-    private CreateKitchenResponse createKitchen() {
-        CreateKitchenRequest createKitchenRequest =
-                new CreateKitchenRequest("testName", "testAddress");
-        return webTestClient.post()
-                .uri("/kitchens")
-                .bodyValue(createKitchenRequest)
-                .exchange()
-                .expectBody(CreateKitchenResponse.class)
-                .returnResult()
-                .getResponseBody();
     }
 
     private void itShouldReturnCreatedStatus(ResponseSpec responseSpec) {
@@ -72,6 +57,49 @@ class MenuItemIT {
     }
 
     private void itShouldReturnTheSameMenuItem(CreateMenuItemRequest request, CreateMenuItemResponse response) {
+        Assertions.assertEquals(request.kitchenId(), response.kitchenId());
+        Assertions.assertEquals(request.name(), response.name());
+        Assertions.assertEquals(request.description(), response.description());
+        Assertions.assertEquals(request.price(), response.price());
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    void givenICreatedAMenuItem_WhenITryToGetAMenuItem() {
+        CreateKitchenRequest createKitchenRequest =
+                new CreateKitchenRequest("testName", "testAddress");
+        ResponseSpec createKitchenResponseSpec =
+                KitchenApiHelper.sendCreateKitchenRequest(webTestClient, createKitchenRequest);
+        CreateKitchenResponse createKitchenResponse =
+                KitchenApiHelper.mapCreateKitchenResponse(createKitchenResponseSpec);
+
+        CreateMenuItemRequest createMenuItemRequest =
+                new CreateMenuItemRequest(
+                        createKitchenResponse.id(),
+                        "testName",
+                        "testAddress",
+                        new BigDecimal(1));
+
+        ResponseSpec createMenuItemResponseSpec =
+                MenuItemApiHelper.sendCreateMenuItemRequest(webTestClient, createMenuItemRequest);
+        CreateMenuItemResponse createMenuItemResponse =
+                MenuItemApiHelper.mapCreateMenuItemResponse(createMenuItemResponseSpec);
+
+        ResponseSpec getMenuItemResponseSpec =
+                MenuItemApiHelper.sendGetMenuItemRequest(webTestClient, createMenuItemResponse.id());
+        itShouldReturnOkStatus(getMenuItemResponseSpec);
+
+        GetMenuItemResponse getMenuItemResponse =
+                MenuItemApiHelper.mapGetMenuItemResponse(getMenuItemResponseSpec);
+        itShouldReturnTheSameMenuItem(createMenuItemRequest, getMenuItemResponse);
+    }
+
+    private void itShouldReturnOkStatus(ResponseSpec responseSpec) {
+        responseSpec.expectStatus()
+                .isOk();
+    }
+
+    private void itShouldReturnTheSameMenuItem(CreateMenuItemRequest request, GetMenuItemResponse response) {
         Assertions.assertEquals(request.kitchenId(), response.kitchenId());
         Assertions.assertEquals(request.name(), response.name());
         Assertions.assertEquals(request.description(), response.description());

@@ -38,6 +38,17 @@ public class MenuItemController {
                 menuItem.getPrice());
     }
 
+    @GetMapping("/{id}")
+    GetMenuItemResponse getMenuItem(@PathVariable("id") Long id) {
+        MenuItem menuItem = menuItemService.getMenuItem(id);
+        return new GetMenuItemResponse(
+                menuItem.getId(),
+                menuItem.getKitchenId(),
+                menuItem.getName(),
+                menuItem.getDescription(),
+                menuItem.getPrice());
+    }
+
 //    @PostMapping
 //    public MenuItemDto createMenuItem(CreateMenuItemRequest createMenuItemRequest) {
 //        return menuItemService.createMenuItem(createMenuItemRequest);

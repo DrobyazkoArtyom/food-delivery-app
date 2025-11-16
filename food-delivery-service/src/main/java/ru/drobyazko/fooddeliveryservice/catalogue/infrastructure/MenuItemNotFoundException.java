@@ -1,4 +1,4 @@
 package ru.drobyazko.fooddeliveryservice.catalogue.infrastructure;
 
-public class KitchenNotFoundException extends RuntimeException {
+public class MenuItemNotFoundException extends RuntimeException {
 }
