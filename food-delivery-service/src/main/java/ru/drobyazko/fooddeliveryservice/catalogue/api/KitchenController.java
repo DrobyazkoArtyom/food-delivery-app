@@ -37,7 +37,8 @@ public class KitchenController {
     public List<GetKitchenResponse> getAllKitchens() {
         List<Kitchen> kitchens = kitchenService.getAllKitchens();
         return kitchens.stream()
-                .map(kitchen -> new GetKitchenResponse(kitchen.getId(), kitchen.getName(), kitchen.getAddress()))
+                .map(kitchen ->
+                        new GetKitchenResponse(kitchen.getId(), kitchen.getName(), kitchen.getAddress()))
                 .toList();
     }
 

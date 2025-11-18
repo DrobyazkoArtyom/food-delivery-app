@@ -8,7 +8,7 @@ import ru.drobyazko.fooddeliveryservice.catalogue.application.MenuItemService;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.CreateMenuItem;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.MenuItem;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/menuItems")
@@ -48,6 +48,28 @@ public class MenuItemController {
                 menuItem.getDescription(),
                 menuItem.getPrice());
     }
+
+    @GetMapping
+    public List<GetMenuItemResponse> getMenu(@RequestParam("kitchenId") Long kitchenId) {
+        List<MenuItem> menuItems = menuItemService.getKitchenMenu(kitchenId);
+        return menuItems.stream()
+                .map(menuItem ->
+                        new GetMenuItemResponse(
+                                menuItem.getId(),
+                                menuItem.getKitchenId(),
+                                menuItem.getName(),
+                                menuItem.getDescription(),
+                                menuItem.getPrice()))
+                .toList();
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteMenuItem(@PathVariable("id") Long id) {
+        menuItemService.deleteMenuItem(id);
+    }
+
+    //TODO: deleteMenuItem or an alternative approach would be just hiding them
 
 //    @PostMapping
 //    public MenuItemDto createMenuItem(CreateMenuItemRequest createMenuItemRequest) {

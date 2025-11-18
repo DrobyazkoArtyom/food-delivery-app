@@ -6,6 +6,8 @@ import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateMenuItemRequest;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateMenuItemResponse;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.GetMenuItemResponse;
 
+import java.util.List;
+
 public class MenuItemApiHelper {
     public static ResponseSpec sendCreateMenuItemRequest(
             WebTestClient webTestClient,
@@ -34,4 +36,23 @@ public class MenuItemApiHelper {
                 .getResponseBody();
     }
 
+    public static ResponseSpec sendGetMenuRequest(
+            WebTestClient webTestClient,
+            Long kitchenId) {
+        return webTestClient.get()
+                .uri("/menuItems?kitchenId=" + kitchenId)
+                .exchange();
+    }
+
+    public static List<GetMenuItemResponse> mapGetMenuResponse(ResponseSpec getAllMenuItemsResponseSpec) {
+        return getAllMenuItemsResponseSpec.expectBodyList(GetMenuItemResponse.class)
+                .returnResult()
+                .getResponseBody();
+    }
+
+    public static ResponseSpec deleteMenuItemRequest(WebTestClient webTestClient, Long id) {
+        return webTestClient.delete()
+                .uri("/menuItems/" + id)
+                .exchange();
+    }
 }

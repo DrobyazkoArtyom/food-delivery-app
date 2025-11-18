@@ -47,7 +47,7 @@ public class MenuItemService {
                 menuItemEntity.getPrice());
     }
 
-    public List<MenuItem> getMenuItemsByKitchenId(Long kitchenId) {
+    public List<MenuItem> getKitchenMenu(Long kitchenId) {
         KitchenEntity kitchenEntity = kitchenRepository.getReferenceById(kitchenId);
         return menuItemRepository
                 .findByKitchenEntity(kitchenEntity)
