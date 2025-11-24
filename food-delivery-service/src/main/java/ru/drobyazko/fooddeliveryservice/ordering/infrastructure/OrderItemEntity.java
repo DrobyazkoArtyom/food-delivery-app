@@ -8,11 +8,12 @@ import java.math.BigDecimal;
 @Table(name = "order_item")
 public class OrderItemEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
     private OrderEntity orderEntity;
+    private Long menuItemId;
     @Column(nullable = false)
     private String name;
     private String description;
@@ -24,13 +25,14 @@ public class OrderItemEntity {
     protected OrderItemEntity() {
     }
 
-    public OrderItemEntity(
-            OrderEntity orderEntity,
-            String name,
-            String description,
-            BigDecimal unitPrice,
-            Integer quantity) {
+    public OrderItemEntity(OrderEntity orderEntity,
+                           Long menuItemId,
+                           String name,
+                           String description,
+                           BigDecimal unitPrice,
+                           Integer quantity) {
         this.orderEntity = orderEntity;
+        this.menuItemId = menuItemId;
         this.name = name;
         this.description = description;
         this.unitPrice = unitPrice;
@@ -43,6 +45,10 @@ public class OrderItemEntity {
 
     public OrderEntity getOrderEntity() {
         return orderEntity;
+    }
+
+    public Long getMenuItemId() {
+        return menuItemId;
     }
 
     public String getName() {

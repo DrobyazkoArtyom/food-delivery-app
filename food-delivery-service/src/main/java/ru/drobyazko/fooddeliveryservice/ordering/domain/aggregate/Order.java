@@ -1,7 +1,5 @@
 package ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate;
 
-import ru.drobyazko.fooddeliveryservice.enums.OrderStatus;
-
 import java.util.Set;
 
 public class Order {

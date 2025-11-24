@@ -23,34 +23,22 @@ class MenuItemIT {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenIHaveCreatedAKitchen_WhenITryToCreateAMenuItem() {
         CreateKitchenRequest createKitchenRequest =
-                new CreateKitchenRequest("testName", "testDescription");
-        ResponseSpec createKitchenResponseSpec =
-                KitchenApiHelper.sendCreateKitchenRequest(webTestClient, createKitchenRequest);
-        CreateKitchenResponse createKitchenResponse =
-                KitchenApiHelper.mapCreateKitchenResponse(createKitchenResponseSpec);
+                new CreateKitchenRequest("test", "test");
+        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(webTestClient, createKitchenRequest);
 
         CreateMenuItemRequest createMenuItemRequest =
-                new CreateMenuItemRequest(
-                        createKitchenResponse.id(),
-                        "testName",
-                        "testDescription",
-                        new BigDecimal(1));
+                new CreateMenuItemRequest(createKitchenResponse.id(), "test", "test", new BigDecimal(1));
 
         ResponseSpec createMenuItemResponseSpec =
                 MenuItemApiHelper.sendCreateMenuItemRequest(webTestClient, createMenuItemRequest);
 
-        itShouldReturnCreatedStatus(createMenuItemResponseSpec);
+        createMenuItemResponseSpec.expectStatus().isCreated();
 
         CreateMenuItemResponse createMenuItemResponse =
                 MenuItemApiHelper.mapCreateMenuItemResponse(createMenuItemResponseSpec);
 
         itShouldAllocateAnId(createMenuItemResponse);
         itShouldReturnTheSameMenuItem(createMenuItemRequest, createMenuItemResponse);
-    }
-
-    private void itShouldReturnCreatedStatus(ResponseSpec responseSpec) {
-        responseSpec.expectStatus()
-                .isCreated();
     }
 
     private void itShouldAllocateAnId(CreateMenuItemResponse response) {
@@ -67,37 +55,22 @@ class MenuItemIT {
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenICreatedAMenuItem_WhenITryToGetAMenuItem() {
-        CreateKitchenRequest createKitchenRequest =
-                new CreateKitchenRequest("testName", "testDescription");
-        ResponseSpec createKitchenResponseSpec =
-                KitchenApiHelper.sendCreateKitchenRequest(webTestClient, createKitchenRequest);
-        CreateKitchenResponse createKitchenResponse =
-                KitchenApiHelper.mapCreateKitchenResponse(createKitchenResponseSpec);
+        CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
+        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(webTestClient, createKitchenRequest);
 
         CreateMenuItemRequest createMenuItemRequest =
-                new CreateMenuItemRequest(
-                        createKitchenResponse.id(),
-                        "testName",
-                        "testDescription",
-                        new BigDecimal(1));
+                new CreateMenuItemRequest(createKitchenResponse.id(), "test", "test", new BigDecimal(1));
 
-        ResponseSpec createMenuItemResponseSpec =
-                MenuItemApiHelper.sendCreateMenuItemRequest(webTestClient, createMenuItemRequest);
         CreateMenuItemResponse createMenuItemResponse =
-                MenuItemApiHelper.mapCreateMenuItemResponse(createMenuItemResponseSpec);
+                MenuItemApiHelper.createMenuItem(webTestClient, createMenuItemRequest);
 
         ResponseSpec getMenuItemResponseSpec =
                 MenuItemApiHelper.sendGetMenuItemRequest(webTestClient, createMenuItemResponse.id());
-        itShouldReturnOkStatus(getMenuItemResponseSpec);
+        getMenuItemResponseSpec.expectStatus().isOk();
 
         GetMenuItemResponse getMenuItemResponse =
                 MenuItemApiHelper.mapGetMenuItemResponse(getMenuItemResponseSpec);
         itShouldReturnTheSameMenuItem(createMenuItemRequest, getMenuItemResponse);
-    }
-
-    private void itShouldReturnOkStatus(ResponseSpec responseSpec) {
-        responseSpec.expectStatus()
-                .isOk();
     }
 
     private void itShouldReturnTheSameMenuItem(CreateMenuItemRequest request, GetMenuItemResponse response) {
@@ -110,24 +83,12 @@ class MenuItemIT {
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenICreatedAFewMenuItems_WhenITryToGetKitchenMenu() {
-        CreateKitchenRequest createKitchenRequest =
-                new CreateKitchenRequest("testName", "testDescription");
-        ResponseSpec createKitchenResponseSpec =
-                KitchenApiHelper.sendCreateKitchenRequest(webTestClient, createKitchenRequest);
-        CreateKitchenResponse createKitchenResponse =
-                KitchenApiHelper.mapCreateKitchenResponse(createKitchenResponseSpec);
+        CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
+        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(webTestClient, createKitchenRequest);
 
         List<CreateMenuItemRequest> createMenuItemRequests = List.of(
-                new CreateMenuItemRequest(
-                        createKitchenResponse.id(),
-                        "testName",
-                        "testDescription",
-                        new BigDecimal(1)),
-                new CreateMenuItemRequest(
-                        createKitchenResponse.id(),
-                        "testNameSecond",
-                        "testDescriptionSecond",
-                        new BigDecimal(1))
+                new CreateMenuItemRequest(createKitchenResponse.id(), "test1", "test1", new BigDecimal(1)),
+                new CreateMenuItemRequest(createKitchenResponse.id(), "test2", "test2", new BigDecimal(1))
         );
 
         for (CreateMenuItemRequest createMenuItemRequest : createMenuItemRequests) {
@@ -136,7 +97,7 @@ class MenuItemIT {
 
         ResponseSpec getMenuResponseSpec =
                 MenuItemApiHelper.sendGetMenuRequest(webTestClient, createKitchenResponse.id());
-        itShouldReturnOkStatus(getMenuResponseSpec);
+        getMenuResponseSpec.expectStatus().isOk();
 
         List<GetMenuItemResponse> getMenuResponse =
                 MenuItemApiHelper.mapGetMenuResponse(getMenuResponseSpec);
@@ -154,44 +115,24 @@ class MenuItemIT {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenIMenuItem_WhenITryToDeleteIt() {
-        CreateKitchenRequest createKitchenRequest =
-                new CreateKitchenRequest("testName", "testDescription");
-        ResponseSpec createKitchenResponseSpec =
-                KitchenApiHelper.sendCreateKitchenRequest(webTestClient, createKitchenRequest);
-        CreateKitchenResponse createKitchenResponse =
-                KitchenApiHelper.mapCreateKitchenResponse(createKitchenResponseSpec);
+    void givenICreatedAMenuItem_WhenITryToDeleteIt() {
+        CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
+        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(webTestClient, createKitchenRequest);
 
         CreateMenuItemRequest createMenuItemRequest =
-                new CreateMenuItemRequest(
-                        createKitchenResponse.id(),
-                        "testName",
-                        "testDescription",
-                        new BigDecimal(1));
+                new CreateMenuItemRequest(createKitchenResponse.id(), "test", "test", new BigDecimal(1));
 
-        ResponseSpec createMenuItemResponseSpec =
-                MenuItemApiHelper.sendCreateMenuItemRequest(webTestClient, createMenuItemRequest);
         CreateMenuItemResponse createMenuItemResponse =
-                MenuItemApiHelper.mapCreateMenuItemResponse(createMenuItemResponseSpec);
+                MenuItemApiHelper.createMenuItem(webTestClient, createMenuItemRequest);
 
         ResponseSpec deleteMenuItemResponseSpec =
-                MenuItemApiHelper.deleteMenuItemRequest(webTestClient, createMenuItemResponse.id());
+                MenuItemApiHelper.sendDeleteMenuItemRequest(webTestClient, createMenuItemResponse.id());
 
-        itShouldReturnNoContentStatus(deleteMenuItemResponseSpec);
+        deleteMenuItemResponseSpec.expectStatus().isNoContent();
 
         ResponseSpec getMenuItemResponseSpec =
                 MenuItemApiHelper.sendGetMenuItemRequest(webTestClient, createMenuItemResponse.id());
 
-        itShouldReturnNotFound(getMenuItemResponseSpec);
-    }
-
-    private void itShouldReturnNoContentStatus(ResponseSpec responseSpec) {
-        responseSpec.expectStatus()
-                .isNoContent();
-    }
-
-    private void itShouldReturnNotFound(ResponseSpec responseSpec) {
-        responseSpec.expectStatus()
-                .isNotFound();
+        getMenuItemResponseSpec.expectStatus().isNotFound();
     }
 }

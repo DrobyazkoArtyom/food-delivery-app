@@ -1,6 +1,5 @@
 package ru.drobyazko.fooddeliveryservice;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.reactive.server.WebTestClient.*;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenRequest;
@@ -23,6 +22,11 @@ public class KitchenApiHelper {
         return responseSpec.expectBody(CreateKitchenResponse.class)
                 .returnResult()
                 .getResponseBody();
+    }
+
+    public static CreateKitchenResponse createKitchen(WebTestClient webTestClient, CreateKitchenRequest createKitchenRequest) {
+        ResponseSpec responseSpec = sendCreateKitchenRequest(webTestClient, createKitchenRequest);
+        return mapCreateKitchenResponse(responseSpec);
     }
 
     public static ResponseSpec sendGetKitchenRequest(WebTestClient webTestClient, Long id) {

@@ -24,6 +24,11 @@ public class MenuItemApiHelper {
                 .getResponseBody();
     }
 
+    public static CreateMenuItemResponse createMenuItem(WebTestClient webTestClient, CreateMenuItemRequest createMenuItemRequest) {
+        ResponseSpec responseSpec = sendCreateMenuItemRequest(webTestClient, createMenuItemRequest);
+        return mapCreateMenuItemResponse(responseSpec);
+    }
+
     public static ResponseSpec sendGetMenuItemRequest(WebTestClient webTestClient, Long id) {
         return webTestClient.get()
                 .uri("/menuItems/" + id)
@@ -50,9 +55,10 @@ public class MenuItemApiHelper {
                 .getResponseBody();
     }
 
-    public static ResponseSpec deleteMenuItemRequest(WebTestClient webTestClient, Long id) {
+    public static ResponseSpec sendDeleteMenuItemRequest(WebTestClient webTestClient, Long id) {
         return webTestClient.delete()
                 .uri("/menuItems/" + id)
                 .exchange();
     }
+
 }

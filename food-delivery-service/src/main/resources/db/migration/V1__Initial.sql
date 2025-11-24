@@ -25,8 +25,8 @@ CREATE TABLE customer_order
 CREATE TABLE order_item
 (
     id           BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    menu_item_id BIGINT  NOT NULL,
     order_id     BIGINT REFERENCES customer_order (id),
+    menu_item_id BIGINT  NOT NULL,
     name         VARCHAR NOT NULL,
     description  VARCHAR,
     unit_price   numeric NOT NULL,
