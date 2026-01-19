@@ -2,9 +2,6 @@ package ru.drobyazko.fooddeliveryservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -19,8 +16,6 @@ import java.io.UnsupportedEncodingException;
 public class UserApiHelper {
     public static ResultActions sendRegisterUserRequest(MockMvc mockMvc, RegisterUserRequest registerUserRequest) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.post("/users")
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
-                .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(registerUserRequest)));
     }
 
@@ -31,7 +26,6 @@ public class UserApiHelper {
 
     public static ResultActions sendLoginUserRequest(MockMvc mockMvc, LoginUserRequest loginUserRequest) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.get("/users")
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .with(SecurityMockMvcRequestPostProcessors.httpBasic(loginUserRequest.username(), loginUserRequest.password())));
     }
 

@@ -4,10 +4,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.*;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenRequest;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenResponse;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.GetKitchenResponse;
@@ -15,22 +17,23 @@ import ru.drobyazko.fooddeliveryservice.catalogue.api.GetKitchenResponse;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(PostgreSQLContainerConfiguration.class)
+@AutoConfigureMockMvc
+@Import({PostgreSQLContainerConfiguration.class, MockMvcConfiguration.class})
 class KitchenIT {
     @Autowired
-    private WebTestClient webTestClient;
+    private MockMvc mockMvc;
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void whenICreateAKitchen() {
+    void whenICreateAKitchen() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
-        ResponseSpec createKitchenResponseSpec =
-                KitchenApiHelper.sendCreateKitchenRequest(webTestClient, createKitchenRequest);
+        ResultActions createKitchenResultActions =
+                KitchenApiHelper.sendCreateKitchenRequest(mockMvc, createKitchenRequest);
 
-        createKitchenResponseSpec.expectStatus().isCreated();
+        createKitchenResultActions.andExpect(MockMvcResultMatchers.status().isCreated());
 
         CreateKitchenResponse response =
-                KitchenApiHelper.mapCreateKitchenResponse(createKitchenResponseSpec);
+                KitchenApiHelper.mapCreateKitchenResponse(createKitchenResultActions);
 
         itShouldAllocateAnId(response);
         itShouldReturnTheSameKitchen(createKitchenRequest, response);
@@ -47,26 +50,26 @@ class KitchenIT {
 
     //TODO: should probably make this one a unit test in the controller slice
     @Test
-    void whenICreateAnInvalidKitchen() {
+    void whenICreateAnInvalidKitchen() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("", null);
-        ResponseSpec createKitchenResponseSpec =
-                KitchenApiHelper.sendCreateKitchenRequest(webTestClient, createKitchenRequest);
+        ResultActions createKitchenResultActions =
+                KitchenApiHelper.sendCreateKitchenRequest(mockMvc, createKitchenRequest);
 
-        createKitchenResponseSpec.expectStatus().isBadRequest();
+        createKitchenResultActions.andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenICreateAKitchen_WhenITryToGetAKitchen() {
+    void givenICreateAKitchen_WhenITryToGetAKitchen() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
-        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(webTestClient, createKitchenRequest);
+        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(mockMvc, createKitchenRequest);
 
-        ResponseSpec getKitchenResponseSpec =
-                KitchenApiHelper.sendGetKitchenRequest(webTestClient, createKitchenResponse.id());
-        getKitchenResponseSpec.expectStatus().isOk();
+        ResultActions getKitchenResultActions =
+                KitchenApiHelper.sendGetKitchenRequest(mockMvc, createKitchenResponse.id());
+        getKitchenResultActions.andExpect(MockMvcResultMatchers.status().isOk());
 
         GetKitchenResponse getKitchenResponse =
-                KitchenApiHelper.mapGetKitchenResponse(getKitchenResponseSpec);
+                KitchenApiHelper.mapGetKitchenResponse(getKitchenResultActions);
         itShouldReturnTheSameKitchen(createKitchenRequest, getKitchenResponse);
     }
 
@@ -79,21 +82,21 @@ class KitchenIT {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenICreatedAFewKitchens_WhenITryToGetAllKitchens() {
+    void givenICreatedAFewKitchens_WhenITryToGetAllKitchens() throws Exception {
         List<CreateKitchenRequest> createKitchenRequestsList = List.of(
                 new CreateKitchenRequest("test1", "test1"),
                 new CreateKitchenRequest("test2", "test2")
         );
         for (CreateKitchenRequest createKitchenRequest : createKitchenRequestsList) {
-            KitchenApiHelper.sendCreateKitchenRequest(webTestClient, createKitchenRequest);
+            KitchenApiHelper.sendCreateKitchenRequest(mockMvc, createKitchenRequest);
         }
 
-        ResponseSpec getAllKitchensResponseSpec =
-                KitchenApiHelper.sendGetAllKitchensRequest(webTestClient);
-        getAllKitchensResponseSpec.expectStatus().isOk();
+        ResultActions getAllKitchensResultActions =
+                KitchenApiHelper.sendGetAllKitchensRequest(mockMvc);
+        getAllKitchensResultActions.andExpect(MockMvcResultMatchers.status().isOk());
 
         List<GetKitchenResponse> getAllKitchenResponse =
-                KitchenApiHelper.mapGetAllKitchensResponse(getAllKitchensResponseSpec);
+                KitchenApiHelper.mapGetAllKitchensResponse(getAllKitchensResultActions);
         itShouldReturnAListOfSameKitchens(createKitchenRequestsList, getAllKitchenResponse);
     }
 
@@ -108,18 +111,18 @@ class KitchenIT {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenICreatedAKitchen_WhenIDeleteAKitchen() {
+    void givenICreatedAKitchen_WhenIDeleteAKitchen() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
-        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(webTestClient, createKitchenRequest);
+        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(mockMvc, createKitchenRequest);
 
-        ResponseSpec deleteKitchenResponseSpec =
-                KitchenApiHelper.sendDeleteKitchenRequest(webTestClient, createKitchenResponse.id());
+        ResultActions deleteKitchenResultActions =
+                KitchenApiHelper.sendDeleteKitchenRequest(mockMvc, createKitchenResponse.id());
 
-        deleteKitchenResponseSpec.expectStatus().isNoContent();
+        deleteKitchenResultActions.andExpect(MockMvcResultMatchers.status().isNoContent());
 
-        ResponseSpec getKitchenResponseSpec =
-                KitchenApiHelper.sendGetKitchenRequest(webTestClient, createKitchenResponse.id());
+        ResultActions getKitchenResultActions =
+                KitchenApiHelper.sendGetKitchenRequest(mockMvc, createKitchenResponse.id());
 
-        getKitchenResponseSpec.expectStatus().isNotFound();
+        getKitchenResultActions.andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 }
