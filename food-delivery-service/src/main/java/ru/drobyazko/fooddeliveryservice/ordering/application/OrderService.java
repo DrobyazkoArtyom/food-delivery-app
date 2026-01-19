@@ -39,10 +39,9 @@ public class OrderService {
 
         Set<OrderItem> orderItems = new HashSet<>();
         for (MenuItemStock menuItemStock : order.menuItemStocks()) {
-            //TODO: a good optimization especially in the scenario when this a separate service somewhere on the network
+            //TODO: a good optimization especially in the scenario where this is a call to a separate service somewhere on the network
             // is batching all the menuitemids and getting them all in one call
             MenuItem menuItem = menuItemService.getMenuItem(menuItemStock.menuItemId());
-            // this is for returning to user without reading database after saving
             OrderItem orderItem = new OrderItem(
                     menuItem.getId(),
                     menuItem.getName(),
@@ -50,7 +49,6 @@ public class OrderService {
                     menuItem.getPrice(),
                     menuItemStock.quantity());
             orderItems.add(orderItem);
-            // this is for saving to database
             OrderItemEntity orderItemEntity = new OrderItemEntity(
                     orderEntity,
                     menuItem.getId(),
@@ -60,7 +58,7 @@ public class OrderService {
                     menuItemStock.quantity());
             orderItemRepository.save(orderItemEntity);
         }
-        return new Order(orderEntity.getId(), orderEntity.getUserId(), orderItems, orderEntity.getStatus());
+        return new Order(orderEntity.getId(), orderEntity.getUserId(), orderItems);
     }
 
     public Order getOrder(Long id) {
@@ -75,7 +73,7 @@ public class OrderService {
                     orderItemEntity.getQuantity());
             orderItems.add(orderItem);
         }
-        return new Order(orderEntity.getId(), orderEntity.getUserId(), orderItems, orderEntity.getStatus());
+        return new Order(orderEntity.getId(), orderEntity.getUserId(), orderItems);
     }
 
 }

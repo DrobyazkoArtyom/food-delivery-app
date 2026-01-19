@@ -3,7 +3,7 @@ package ru.drobyazko.fooddeliveryservice.catalogue.infrastructure;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "kitchen")
+@Table(name = "kitchens")
 public class KitchenEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

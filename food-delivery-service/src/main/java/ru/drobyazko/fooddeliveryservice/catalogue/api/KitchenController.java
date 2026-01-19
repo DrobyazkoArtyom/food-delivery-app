@@ -1,6 +1,7 @@
 package ru.drobyazko.fooddeliveryservice.catalogue.api;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.CreateKitchen;
@@ -15,6 +16,7 @@ import java.util.List;
 public class KitchenController {
     private final KitchenService kitchenService;
 
+    @Autowired
     public KitchenController(KitchenService kitchenService) {
         this.kitchenService = kitchenService;
     }
@@ -24,13 +26,13 @@ public class KitchenController {
     public CreateKitchenResponse createKitchen(@RequestBody @Valid CreateKitchenRequest createKitchenRequest) {
         CreateKitchen createKitchen = new CreateKitchen(createKitchenRequest.name(), createKitchenRequest.address());
         Kitchen kitchen = kitchenService.createKitchen(createKitchen);
-        return new CreateKitchenResponse(kitchen.getId(), kitchen.getName(), kitchen.getAddress());
+        return new CreateKitchenResponse(kitchen.id(), kitchen.name(), kitchen.address());
     }
 
     @GetMapping("/{id}")
     public GetKitchenResponse getKitchen(@PathVariable("id") Long id) {
         Kitchen kitchen = kitchenService.getKitchen(id);
-        return new GetKitchenResponse(kitchen.getId(), kitchen.getName(), kitchen.getAddress());
+        return new GetKitchenResponse(kitchen.id(), kitchen.name(), kitchen.address());
     }
 
     @GetMapping
@@ -38,7 +40,7 @@ public class KitchenController {
         List<Kitchen> kitchens = kitchenService.getAllKitchens();
         return kitchens.stream()
                 .map(kitchen ->
-                        new GetKitchenResponse(kitchen.getId(), kitchen.getName(), kitchen.getAddress()))
+                        new GetKitchenResponse(kitchen.id(), kitchen.name(), kitchen.address()))
                 .toList();
     }
 
