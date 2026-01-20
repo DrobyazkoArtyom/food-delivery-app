@@ -1,34 +1,33 @@
 package ru.drobyazko.fooddeliveryservice;
 
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.drobyazko.fooddeliveryservice.ordering.api.GetOrderResponse;
 import ru.drobyazko.fooddeliveryservice.ordering.api.PlaceOrderRequest;
 import ru.drobyazko.fooddeliveryservice.ordering.api.PlaceOrderResponse;
 
+import java.io.UnsupportedEncodingException;
+
 public class OrderApiHelper {
-    public static ResponseSpec sendPlaceOrderRequest(WebTestClient webTestClient, PlaceOrderRequest placeOrderRequest) {
-        return webTestClient.post()
-                .uri("/orders")
-                .bodyValue(placeOrderRequest)
-                .exchange();
+    public static ResultActions sendPlaceOrderRequest(MockMvc mockMvc, PlaceOrderRequest placeOrderRequest) throws Exception {
+        return mockMvc.perform(MockMvcRequestBuilders.post("/orders")
+                .content(new ObjectMapper().writeValueAsString(placeOrderRequest)));
     }
 
-    public static PlaceOrderResponse mapPlaceOrderResponse(ResponseSpec placeOrderResponseSpec) {
-        return placeOrderResponseSpec.expectBody(PlaceOrderResponse.class)
-                .returnResult()
-                .getResponseBody();
+    public static PlaceOrderResponse mapPlaceOrderResponse(ResultActions placeOrderResultActions) throws UnsupportedEncodingException, JsonProcessingException {
+        return new ObjectMapper().readValue(
+                placeOrderResultActions.andReturn().getResponse().getContentAsString(), PlaceOrderResponse.class);
     }
 
-    public static ResponseSpec sendGetOrderRequest(WebTestClient webTestClient, Long id) {
-        return webTestClient.get()
-                .uri("/orders/" + id)
-                .exchange();
+    public static ResultActions sendGetOrderRequest(MockMvc mockMvc, Long id) throws Exception {
+        return mockMvc.perform(MockMvcRequestBuilders.get("/orders/" + id));
     }
 
-    public static GetOrderResponse mapGetOrderResponse(ResponseSpec getOrderResponseSpec) {
-        return getOrderResponseSpec.expectBody(GetOrderResponse.class)
-                .returnResult()
-                .getResponseBody();
+    public static GetOrderResponse mapGetOrderResponse(ResultActions getOrderResultActions) throws UnsupportedEncodingException, JsonProcessingException {
+        return new ObjectMapper().readValue(
+                getOrderResultActions.andReturn().getResponse().getContentAsString(), GetOrderResponse.class);
     }
 }

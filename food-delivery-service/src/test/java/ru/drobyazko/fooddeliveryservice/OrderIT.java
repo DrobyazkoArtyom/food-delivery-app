@@ -4,10 +4,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.*;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenRequest;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenResponse;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateMenuItemRequest;
@@ -22,19 +24,20 @@ import java.math.BigDecimal;
 import java.util.Set;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(PostgreSQLContainerConfiguration.class)
+@AutoConfigureMockMvc
+@Import({PostgreSQLContainerConfiguration.class, MockMvcConfiguration.class})
 class OrderIT {
     @Autowired
-    private WebTestClient webTestClient;
+    private MockMvc mockMvc;
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenIHaveMenuItemStocks_WhenITryToPlaceAnOrder() {
+    void givenIHaveMenuItemStocks_WhenITryToPlaceAnOrder() throws Exception {
         CreateKitchenResponse createKitchenResponse =
-                KitchenApiHelper.createKitchen(webTestClient, new CreateKitchenRequest("test", "test"));
-        CreateMenuItemResponse firstCreateMenuItemResponse = MenuItemApiHelper.createMenuItem(webTestClient,
+                KitchenApiHelper.createKitchen(mockMvc, new CreateKitchenRequest("test", "test"));
+        CreateMenuItemResponse firstCreateMenuItemResponse = MenuItemApiHelper.createMenuItem(mockMvc,
                 new CreateMenuItemRequest(createKitchenResponse.id(), "test1", "test1", new BigDecimal(1)));
-        CreateMenuItemResponse secondCreateMenuItemResponse = MenuItemApiHelper.createMenuItem(webTestClient,
+        CreateMenuItemResponse secondCreateMenuItemResponse = MenuItemApiHelper.createMenuItem(mockMvc,
                 new CreateMenuItemRequest(createKitchenResponse.id(), "test2", "test2", new BigDecimal(1)));
 
         Set<MenuItemStock> menuItemStocks = Set.of(
@@ -42,9 +45,9 @@ class OrderIT {
                 new MenuItemStock(secondCreateMenuItemResponse.id(), 10)
         );
 
-        ResponseSpec placeOrderResponseSpec =
-                OrderApiHelper.sendPlaceOrderRequest(webTestClient, new PlaceOrderRequest(menuItemStocks));
-        placeOrderResponseSpec.expectStatus().isCreated();
+        ResultActions placeOrderResultActions =
+                OrderApiHelper.sendPlaceOrderRequest(mockMvc, new PlaceOrderRequest(menuItemStocks));
+        placeOrderResultActions.andExpect(MockMvcResultMatchers.status().isCreated());
 
         Set<OrderItem> orderItems = Set.of(
                 new OrderItem(firstCreateMenuItemResponse.id(), "test1", "test1", new BigDecimal(1), 5),
@@ -52,7 +55,7 @@ class OrderIT {
         );
 
         PlaceOrderResponse placeOrderResponse =
-                OrderApiHelper.mapPlaceOrderResponse(placeOrderResponseSpec);
+                OrderApiHelper.mapPlaceOrderResponse(placeOrderResultActions);
         itShouldReturnOrderWithSameMenuItems(placeOrderResponse, orderItems);
     }
 
@@ -64,12 +67,12 @@ class OrderIT {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenIHavePlacedAnOrder_WhenITryToGetAnOrder() {
+    void givenIHavePlacedAnOrder_WhenITryToGetAnOrder() throws Exception {
         CreateKitchenResponse createKitchenResponse =
-                KitchenApiHelper.createKitchen(webTestClient, new CreateKitchenRequest("testName", "testAddress"));
-        CreateMenuItemResponse firstCreateMenuItemResponse = MenuItemApiHelper.createMenuItem(webTestClient,
+                KitchenApiHelper.createKitchen(mockMvc, new CreateKitchenRequest("testName", "testAddress"));
+        CreateMenuItemResponse firstCreateMenuItemResponse = MenuItemApiHelper.createMenuItem(mockMvc,
                 new CreateMenuItemRequest(createKitchenResponse.id(), "test1", "test1", new BigDecimal(1)));
-        CreateMenuItemResponse secondCreateMenuItemResponse = MenuItemApiHelper.createMenuItem(webTestClient,
+        CreateMenuItemResponse secondCreateMenuItemResponse = MenuItemApiHelper.createMenuItem(mockMvc,
                 new CreateMenuItemRequest(createKitchenResponse.id(), "test2", "test2", new BigDecimal(1)));
 
         Set<MenuItemStock> menuItemStocks = Set.of(
@@ -77,22 +80,22 @@ class OrderIT {
                 new MenuItemStock(secondCreateMenuItemResponse.id(), 10)
         );
 
-        ResponseSpec placeOrderResponseSpec =
-                OrderApiHelper.sendPlaceOrderRequest(webTestClient, new PlaceOrderRequest(menuItemStocks));
+        ResultActions placeOrderResultActions =
+                OrderApiHelper.sendPlaceOrderRequest(mockMvc, new PlaceOrderRequest(menuItemStocks));
         PlaceOrderResponse placeOrderResponse =
-                OrderApiHelper.mapPlaceOrderResponse(placeOrderResponseSpec);
+                OrderApiHelper.mapPlaceOrderResponse(placeOrderResultActions);
 
         Set<OrderItem> orderItems = Set.of(
                 new OrderItem(firstCreateMenuItemResponse.id(), "test1", "test1", new BigDecimal(1), 5),
                 new OrderItem(secondCreateMenuItemResponse.id(), "test2", "test2", new BigDecimal(1), 10)
         );
 
-        ResponseSpec getOrderResponseSpec =
-                OrderApiHelper.sendGetOrderRequest(webTestClient, placeOrderResponse.orderId());
-        getOrderResponseSpec.expectStatus().isOk();
+        ResultActions getOrderResultActions =
+                OrderApiHelper.sendGetOrderRequest(mockMvc, placeOrderResponse.orderId());
+        getOrderResultActions.andExpect(MockMvcResultMatchers.status().isOk());
 
         GetOrderResponse getOrderResponse =
-                OrderApiHelper.mapGetOrderResponse(getOrderResponseSpec);
+                OrderApiHelper.mapGetOrderResponse(getOrderResultActions);
         itShouldReturnOrderWithSameMenuItems(getOrderResponse, orderItems);
     }
 

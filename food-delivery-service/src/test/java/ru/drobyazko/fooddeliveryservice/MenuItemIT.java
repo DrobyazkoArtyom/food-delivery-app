@@ -4,38 +4,41 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.*;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(PostgreSQLContainerConfiguration.class)
+@AutoConfigureMockMvc
+@Import({PostgreSQLContainerConfiguration.class, MockMvcConfiguration.class})
 class MenuItemIT {
     @Autowired
-    private WebTestClient webTestClient;
+    private MockMvc mockMvc;
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenIHaveCreatedAKitchen_WhenITryToCreateAMenuItem() {
+    void givenIHaveCreatedAKitchen_WhenITryToCreateAMenuItem() throws Exception {
         CreateKitchenRequest createKitchenRequest =
                 new CreateKitchenRequest("test", "test");
-        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(webTestClient, createKitchenRequest);
+        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(mockMvc, createKitchenRequest);
 
         CreateMenuItemRequest createMenuItemRequest =
                 new CreateMenuItemRequest(createKitchenResponse.id(), "test", "test", new BigDecimal(1));
 
-        ResponseSpec createMenuItemResponseSpec =
-                MenuItemApiHelper.sendCreateMenuItemRequest(webTestClient, createMenuItemRequest);
+        ResultActions createMenuItemResultActions =
+                MenuItemApiHelper.sendCreateMenuItemRequest(mockMvc, createMenuItemRequest);
 
-        createMenuItemResponseSpec.expectStatus().isCreated();
+        createMenuItemResultActions.andExpect(MockMvcResultMatchers.status().isCreated());
 
         CreateMenuItemResponse createMenuItemResponse =
-                MenuItemApiHelper.mapCreateMenuItemResponse(createMenuItemResponseSpec);
+                MenuItemApiHelper.mapCreateMenuItemResponse(createMenuItemResultActions);
 
         itShouldAllocateAnId(createMenuItemResponse);
         itShouldReturnTheSameMenuItem(createMenuItemRequest, createMenuItemResponse);
@@ -54,22 +57,22 @@ class MenuItemIT {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenICreatedAMenuItem_WhenITryToGetAMenuItem() {
+    void givenICreatedAMenuItem_WhenITryToGetAMenuItem() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
-        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(webTestClient, createKitchenRequest);
+        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(mockMvc, createKitchenRequest);
 
         CreateMenuItemRequest createMenuItemRequest =
                 new CreateMenuItemRequest(createKitchenResponse.id(), "test", "test", new BigDecimal(1));
 
         CreateMenuItemResponse createMenuItemResponse =
-                MenuItemApiHelper.createMenuItem(webTestClient, createMenuItemRequest);
+                MenuItemApiHelper.createMenuItem(mockMvc, createMenuItemRequest);
 
-        ResponseSpec getMenuItemResponseSpec =
-                MenuItemApiHelper.sendGetMenuItemRequest(webTestClient, createMenuItemResponse.id());
-        getMenuItemResponseSpec.expectStatus().isOk();
+        ResultActions getMenuItemResultActions =
+                MenuItemApiHelper.sendGetMenuItemRequest(mockMvc, createMenuItemResponse.id());
+        getMenuItemResultActions.andExpect(MockMvcResultMatchers.status().isOk());
 
         GetMenuItemResponse getMenuItemResponse =
-                MenuItemApiHelper.mapGetMenuItemResponse(getMenuItemResponseSpec);
+                MenuItemApiHelper.mapGetMenuItemResponse(getMenuItemResultActions);
         itShouldReturnTheSameMenuItem(createMenuItemRequest, getMenuItemResponse);
     }
 
@@ -82,9 +85,9 @@ class MenuItemIT {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenICreatedAFewMenuItems_WhenITryToGetKitchenMenu() {
+    void givenICreatedAFewMenuItems_WhenITryToGetKitchenMenu() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
-        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(webTestClient, createKitchenRequest);
+        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(mockMvc, createKitchenRequest);
 
         List<CreateMenuItemRequest> createMenuItemRequests = List.of(
                 new CreateMenuItemRequest(createKitchenResponse.id(), "test1", "test1", new BigDecimal(1)),
@@ -92,15 +95,15 @@ class MenuItemIT {
         );
 
         for (CreateMenuItemRequest createMenuItemRequest : createMenuItemRequests) {
-            MenuItemApiHelper.sendCreateMenuItemRequest(webTestClient, createMenuItemRequest);
+            MenuItemApiHelper.sendCreateMenuItemRequest(mockMvc, createMenuItemRequest);
         }
 
-        ResponseSpec getMenuResponseSpec =
-                MenuItemApiHelper.sendGetMenuRequest(webTestClient, createKitchenResponse.id());
-        getMenuResponseSpec.expectStatus().isOk();
+        ResultActions getMenuResultActions =
+                MenuItemApiHelper.sendGetMenuRequest(mockMvc, createKitchenResponse.id());
+        getMenuResultActions.andExpect(MockMvcResultMatchers.status().isOk());
 
         List<GetMenuItemResponse> getMenuResponse =
-                MenuItemApiHelper.mapGetMenuResponse(getMenuResponseSpec);
+                MenuItemApiHelper.mapGetMenuResponse(getMenuResultActions);
 
         itShouldReturnAListOfSameMenuItems(createMenuItemRequests, getMenuResponse);
     }
@@ -115,24 +118,24 @@ class MenuItemIT {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void givenICreatedAMenuItem_WhenITryToDeleteIt() {
+    void givenICreatedAMenuItem_WhenITryToDeleteIt() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
-        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(webTestClient, createKitchenRequest);
+        CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(mockMvc, createKitchenRequest);
 
         CreateMenuItemRequest createMenuItemRequest =
                 new CreateMenuItemRequest(createKitchenResponse.id(), "test", "test", new BigDecimal(1));
 
         CreateMenuItemResponse createMenuItemResponse =
-                MenuItemApiHelper.createMenuItem(webTestClient, createMenuItemRequest);
+                MenuItemApiHelper.createMenuItem(mockMvc, createMenuItemRequest);
 
-        ResponseSpec deleteMenuItemResponseSpec =
-                MenuItemApiHelper.sendDeleteMenuItemRequest(webTestClient, createMenuItemResponse.id());
+        ResultActions deleteMenuItemResultActions =
+                MenuItemApiHelper.sendDeleteMenuItemRequest(mockMvc, createMenuItemResponse.id());
 
-        deleteMenuItemResponseSpec.expectStatus().isNoContent();
+        deleteMenuItemResultActions.andExpect(MockMvcResultMatchers.status().isNoContent());
 
-        ResponseSpec getMenuItemResponseSpec =
-                MenuItemApiHelper.sendGetMenuItemRequest(webTestClient, createMenuItemResponse.id());
+        ResultActions getMenuItemResultActions =
+                MenuItemApiHelper.sendGetMenuItemRequest(mockMvc, createMenuItemResponse.id());
 
-        getMenuItemResponseSpec.expectStatus().isNotFound();
+        getMenuItemResultActions.andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 }
