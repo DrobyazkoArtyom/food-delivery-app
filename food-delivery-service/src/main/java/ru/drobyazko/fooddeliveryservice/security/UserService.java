@@ -18,7 +18,7 @@ public class UserService {
         UserEntity userEntity = new UserEntity(registerUser.username(), registerUser.password(), true);
         userEntity = userRepository.save(userEntity);
         for (AuthorityType authorityType : registerUser.authorityTypeSet()) {
-            AuthorityEntity authorityEntity = new AuthorityEntity(new AuthorityId(userEntity.getId(), authorityType.getAuthorityType()));
+            AuthorityEntity authorityEntity = new AuthorityEntity(new AuthorityId(userEntity.getId(), authorityType.getAuthority()));
             authorityEntity = authorityRepository.save(authorityEntity);
         }
         return new User(userEntity.getId(), userEntity.getUsername(), userEntity.getPassword(), registerUser.authorityTypeSet());

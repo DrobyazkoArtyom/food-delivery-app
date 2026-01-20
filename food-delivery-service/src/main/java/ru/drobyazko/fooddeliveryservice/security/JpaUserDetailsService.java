@@ -1,30 +1,35 @@
 package ru.drobyazko.fooddeliveryservice.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class JpaUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
+    private final AuthorityRepository authorityRepository;
 
     @Autowired
-    public JpaUserDetailsService(UserRepository userRepository) {
+    public JpaUserDetailsService(UserRepository userRepository, AuthorityRepository authorityRepository) {
         this.userRepository = userRepository;
+        this.authorityRepository = authorityRepository;
     }
 
-    //TODO: add actual authorities
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<UserEntity> userEntityOptional = userRepository.findByUsername(username);
         UserEntity userEntity = userEntityOptional.orElseThrow(() -> UsernameNotFoundException.fromUsername(username));
-        return new User(username, userEntity.getPassword(), List.of(new SimpleGrantedAuthority("ADMIN")));
+        Set<AuthorityEntity> authorityEntitySet = authorityRepository.findAuthorityEntityByAuthorityId_UserId(userEntity.getId());
+        Set<AuthorityType> authorityTypeSet = authorityEntitySet.stream()
+                .map(authorityEntity -> AuthorityType.valueOf(authorityEntity.getAuthorityId().getAuthority()))
+                .collect(Collectors.toSet());
+        return new User(username, userEntity.getPassword(), authorityTypeSet);
     }
 }

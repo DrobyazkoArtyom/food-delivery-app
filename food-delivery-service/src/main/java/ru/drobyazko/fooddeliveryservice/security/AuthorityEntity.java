@@ -2,6 +2,7 @@ package ru.drobyazko.fooddeliveryservice.security;
 
 import jakarta.persistence.*;
 
+//TODO: not sure how close jpa mapping should match actual db schema. do we need a composite key expressed as embeddedId here?
 @Entity
 @Table(name = "authorities")
 public class AuthorityEntity {

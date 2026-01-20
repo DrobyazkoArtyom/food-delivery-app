@@ -1,6 +1,8 @@
 package ru.drobyazko.fooddeliveryservice.security;
 
-public enum AuthorityType {
+import org.springframework.security.core.GrantedAuthority;
+
+public enum AuthorityType implements GrantedAuthority {
     USER("USER"),
     KITCHEN("KITCHEN"),
     ADMIN("ADMIN");
@@ -11,7 +13,8 @@ public enum AuthorityType {
         this.authorityType = authorityType;
     }
 
-    public String getAuthorityType() {
+    @Override
+    public String getAuthority() {
         return authorityType;
     }
 }

@@ -2,8 +2,6 @@ package ru.drobyazko.fooddeliveryservice.security;
 
 import jakarta.persistence.*;
 
-import java.util.Set;
-
 @Entity
 @Table(name = "users")
 public class UserEntity {
@@ -16,8 +14,6 @@ public class UserEntity {
     private String password;
     @Column(nullable = false)
     private boolean enabled;
-    @OneToMany
-    private Set<AuthorityEntity> authorityEntity;
 
     protected UserEntity() {
     }
