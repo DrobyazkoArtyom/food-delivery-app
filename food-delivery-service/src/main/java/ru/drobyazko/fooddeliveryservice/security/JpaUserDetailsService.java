@@ -27,9 +27,9 @@ public class JpaUserDetailsService implements UserDetailsService {
         Optional<UserEntity> userEntityOptional = userRepository.findByUsername(username);
         UserEntity userEntity = userEntityOptional.orElseThrow(() -> UsernameNotFoundException.fromUsername(username));
         Set<AuthorityEntity> authorityEntitySet = authorityRepository.findAuthorityEntityByAuthorityId_UserId(userEntity.getId());
-        Set<AuthorityType> authorityTypeSet = authorityEntitySet.stream()
-                .map(authorityEntity -> AuthorityType.valueOf(authorityEntity.getAuthorityId().getAuthority()))
+        Set<Authority> authoritySet = authorityEntitySet.stream()
+                .map(authorityEntity -> Authority.valueOf(authorityEntity.getAuthorityId().getAuthority()))
                 .collect(Collectors.toSet());
-        return new User(username, userEntity.getPassword(), authorityTypeSet);
+        return new User(username, userEntity.getPassword(), authoritySet);
     }
 }

@@ -63,32 +63,10 @@ public class MenuItemController {
                 .toList();
     }
 
+    //TODO: should probably implement a tombstone system instead of straight up deleting MenuItems from database
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteMenuItem(@PathVariable("id") Long id) {
         menuItemService.deleteMenuItem(id);
     }
-
-    //TODO: deleteMenuItem or an alternative approach would be just hiding them
-
-//    @PostMapping
-//    public MenuItemDto createMenuItem(CreateMenuItemRequest createMenuItemRequest) {
-//        return menuItemService.createMenuItem(createMenuItemRequest);
-//    }
-//
-//    @GetMapping
-//    public List<MenuItemDto> getMenuItems(Long kitchenId) {
-//        return menuItemService.getMenuItemsByKitchenId(kitchenId);
-//    }
-//
-//    @PutMapping
-//    public void updateMenuItem() {
-//
-//    }
-//
-//    // probably don't need this method, we need to just hide the menuitem
-//    @DeleteMapping
-//    public void deleteMenuItem(Long id) {
-//        menuItemService.deleteMenuItem(id);
-//    }
 }

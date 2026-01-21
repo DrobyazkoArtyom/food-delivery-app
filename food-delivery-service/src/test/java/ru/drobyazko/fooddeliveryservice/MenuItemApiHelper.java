@@ -16,7 +16,8 @@ import java.util.List;
 public class MenuItemApiHelper {
     public static ResultActions sendCreateMenuItemRequest(MockMvc mockMvc, CreateMenuItemRequest createMenuItemRequest) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.post("/menuItems")
-                .content(new ObjectMapper().writeValueAsString(createMenuItemRequest)));
+                .content(new ObjectMapper().writeValueAsString(createMenuItemRequest))
+                .with(CustomSecurityMockMvcRequestPostProcessors.kitchen()));
     }
 
     public static CreateMenuItemResponse mapCreateMenuItemResponse(ResultActions createMenuItemResultActions) throws UnsupportedEncodingException, JsonProcessingException {
@@ -39,7 +40,7 @@ public class MenuItemApiHelper {
     }
 
     public static ResultActions sendGetMenuRequest(MockMvc mockMvc, Long kitchenId) throws Exception {
-        return mockMvc.perform(MockMvcRequestBuilders.get("/menuItems?kitchend=" + kitchenId));
+        return mockMvc.perform(MockMvcRequestBuilders.get("/menuItems?kitchenId=" + kitchenId));
     }
 
     public static List<GetMenuItemResponse> mapGetMenuResponse(ResultActions getAllMenuItemsResultActions) throws UnsupportedEncodingException, JsonProcessingException {
@@ -49,7 +50,8 @@ public class MenuItemApiHelper {
     }
 
     public static ResultActions sendDeleteMenuItemRequest(MockMvc mockMvc, Long id) throws Exception {
-        return mockMvc.perform(MockMvcRequestBuilders.delete("/menuItems/" + id));
+        return mockMvc.perform(MockMvcRequestBuilders.delete("/menuItems/" + id)
+                .with(CustomSecurityMockMvcRequestPostProcessors.kitchen()));
     }
 
 }

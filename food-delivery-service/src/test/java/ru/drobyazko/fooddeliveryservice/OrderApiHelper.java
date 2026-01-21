@@ -14,7 +14,8 @@ import java.io.UnsupportedEncodingException;
 public class OrderApiHelper {
     public static ResultActions sendPlaceOrderRequest(MockMvc mockMvc, PlaceOrderRequest placeOrderRequest) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.post("/orders")
-                .content(new ObjectMapper().writeValueAsString(placeOrderRequest)));
+                .content(new ObjectMapper().writeValueAsString(placeOrderRequest))
+                .with(CustomSecurityMockMvcRequestPostProcessors.user()));
     }
 
     public static PlaceOrderResponse mapPlaceOrderResponse(ResultActions placeOrderResultActions) throws UnsupportedEncodingException, JsonProcessingException {
@@ -23,7 +24,8 @@ public class OrderApiHelper {
     }
 
     public static ResultActions sendGetOrderRequest(MockMvc mockMvc, Long id) throws Exception {
-        return mockMvc.perform(MockMvcRequestBuilders.get("/orders/" + id));
+        return mockMvc.perform(MockMvcRequestBuilders.get("/orders/" + id)
+                .with(CustomSecurityMockMvcRequestPostProcessors.user()));
     }
 
     public static GetOrderResponse mapGetOrderResponse(ResultActions getOrderResultActions) throws UnsupportedEncodingException, JsonProcessingException {

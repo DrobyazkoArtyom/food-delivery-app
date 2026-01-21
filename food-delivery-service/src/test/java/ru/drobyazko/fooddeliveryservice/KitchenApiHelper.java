@@ -16,7 +16,8 @@ import java.util.List;
 public class KitchenApiHelper {
     public static ResultActions sendCreateKitchenRequest(MockMvc mockMvc, CreateKitchenRequest createKitchenRequest) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.post("/kitchens")
-                .content(new ObjectMapper().writeValueAsString(createKitchenRequest)));
+                .content(new ObjectMapper().writeValueAsString(createKitchenRequest))
+                .with(CustomSecurityMockMvcRequestPostProcessors.kitchen()));
     }
 
     public static CreateKitchenResponse mapCreateKitchenResponse(ResultActions resultActions) throws UnsupportedEncodingException, JsonProcessingException {
@@ -47,6 +48,7 @@ public class KitchenApiHelper {
     }
 
     public static ResultActions sendDeleteKitchenRequest(MockMvc mockMvc, Long id) throws Exception {
-        return mockMvc.perform(MockMvcRequestBuilders.delete("/kitchens/" + id));
+        return mockMvc.perform(MockMvcRequestBuilders.delete("/kitchens/" + id)
+                .with(CustomSecurityMockMvcRequestPostProcessors.kitchen()));
     }
 }

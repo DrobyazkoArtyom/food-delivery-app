@@ -17,10 +17,10 @@ public class UserService {
     public User registerUser(RegisterUser registerUser) {
         UserEntity userEntity = new UserEntity(registerUser.username(), registerUser.password(), true);
         userEntity = userRepository.save(userEntity);
-        for (AuthorityType authorityType : registerUser.authorityTypeSet()) {
-            AuthorityEntity authorityEntity = new AuthorityEntity(new AuthorityId(userEntity.getId(), authorityType.getAuthority()));
+        for (Authority authority : registerUser.authoritySet()) {
+            AuthorityEntity authorityEntity = new AuthorityEntity(new AuthorityId(userEntity.getId(), authority.getAuthority()));
             authorityEntity = authorityRepository.save(authorityEntity);
         }
-        return new User(userEntity.getId(), userEntity.getUsername(), userEntity.getPassword(), registerUser.authorityTypeSet());
+        return new User(userEntity.getId(), userEntity.getUsername(), userEntity.getPassword(), registerUser.authoritySet());
     }
 }

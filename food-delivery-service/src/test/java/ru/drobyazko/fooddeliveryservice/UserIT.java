@@ -10,8 +10,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 import ru.drobyazko.fooddeliveryservice.security.*;
 
 import java.util.Set;
@@ -27,7 +25,7 @@ class UserIT {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenIAmAUser_WhenITryToRegister() throws Exception {
         RegisterUserRequest registerUserRequest =
-                new RegisterUserRequest("test", "{noop}test", Set.of(AuthorityType.ADMIN));
+                new RegisterUserRequest("test", "{noop}test", Set.of(Authority.ADMIN));
         ResultActions registerUserResponseResultActions = UserApiHelper.sendRegisterUserRequest(mockMvc, registerUserRequest);
         registerUserResponseResultActions.andExpect(MockMvcResultMatchers.status().isCreated());
         RegisterUserResponse registerUserResponse = UserApiHelper.mapRegisterUserResponse(registerUserResponseResultActions);
@@ -43,13 +41,13 @@ class UserIT {
     private void itShouldReturnSameUser(RegisterUserRequest request, RegisterUserResponse response) {
         Assertions.assertEquals(request.username(), response.username());
         Assertions.assertEquals(request.password(), response.password());
-        Assertions.assertEquals(request.authorityTypes(), response.authorityTypes());
+        Assertions.assertEquals(request.authorities(), response.authorities());
     }
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void givenIAmAUser_WhenITryToLogin() throws Exception {
-        RegisterUserRequest registerUserRequest = new RegisterUserRequest("test", "{noop}test", Set.of(AuthorityType.ADMIN));
+        RegisterUserRequest registerUserRequest = new RegisterUserRequest("test", "{noop}test", Set.of(Authority.ADMIN));
         ResultActions registerUserResponseResultActions = UserApiHelper.sendRegisterUserRequest(mockMvc, registerUserRequest);
         registerUserResponseResultActions.andExpect(MockMvcResultMatchers.status().isCreated());
         RegisterUserResponse registerUserResponse = UserApiHelper.mapRegisterUserResponse(registerUserResponseResultActions);

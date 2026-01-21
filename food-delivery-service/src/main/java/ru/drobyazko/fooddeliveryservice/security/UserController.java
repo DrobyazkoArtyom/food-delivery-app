@@ -22,7 +22,7 @@ public class UserController {
     public RegisterUserResponse registerUser(@RequestBody @Valid RegisterUserRequest registerUserRequest) {
         RegisterUser registerUser = new RegisterUser(registerUserRequest.username(),
                 registerUserRequest.password(),
-                registerUserRequest.authorityTypes());
+                registerUserRequest.authorities());
         User user = userService.registerUser(registerUser);
         return new RegisterUserResponse(user.id(), user.username(), user.password(), user.authorities());
     }
