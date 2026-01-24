@@ -2,7 +2,9 @@ package ru.drobyazko.fooddeliveryservice.catalogue.application;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.CreateMenuItem;
+import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.DeleteMenuItem;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.MenuItem;
 import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.*;
 
@@ -19,9 +21,11 @@ public class MenuItemService {
         this.kitchenRepository = kitchenRepository;
     }
 
+    @Transactional
     public MenuItem createMenuItem(CreateMenuItem createMenuItem) {
         KitchenEntity kitchenEntity =
-                kitchenRepository.findById(createMenuItem.kitchenId()).orElseThrow(KitchenNotFoundException::new);
+                kitchenRepository.findByIdAndUserId(createMenuItem.kitchenId(), createMenuItem.userId())
+                        .orElseThrow(KitchenNotFoundException::new);
         MenuItemEntity menuItemEntity =
                 new MenuItemEntity(
                         kitchenEntity,
@@ -37,6 +41,7 @@ public class MenuItemService {
                 menuItemEntity.getPrice());
     }
 
+    @Transactional(readOnly = true)
     public MenuItem getMenuItem(Long id) {
         MenuItemEntity menuItemEntity = menuItemRepository.findById(id).orElseThrow(MenuItemNotFoundException::new);
         return new MenuItem(
@@ -47,6 +52,7 @@ public class MenuItemService {
                 menuItemEntity.getPrice());
     }
 
+    @Transactional(readOnly = true)
     public List<MenuItem> getKitchenMenu(Long kitchenId) {
         KitchenEntity kitchenEntity = kitchenRepository.getReferenceById(kitchenId);
         return menuItemRepository
@@ -62,8 +68,13 @@ public class MenuItemService {
                 .toList();
     }
 
-    public void deleteMenuItem(Long id) {
-        menuItemRepository.deleteById(id);
+    @Transactional
+    public void deleteMenuItem(DeleteMenuItem deleteMenuItem) {
+        //TODO: not sure if we should throw, maybe just log that we could not delete this menuitem
+        MenuItemEntity menuItemEntity = menuItemRepository.findById(deleteMenuItem.id()).orElseThrow();
+        if (menuItemEntity.getKitchenEntity().getUserId().equals(deleteMenuItem.userId())) {
+            menuItemRepository.deleteById(deleteMenuItem.id());
+        }
     }
 
 }

@@ -17,7 +17,7 @@ public class MenuItemApiHelper {
     public static ResultActions sendCreateMenuItemRequest(MockMvc mockMvc, CreateMenuItemRequest createMenuItemRequest) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.post("/menuItems")
                 .content(new ObjectMapper().writeValueAsString(createMenuItemRequest))
-                .with(CustomSecurityMockMvcRequestPostProcessors.kitchen()));
+                .with(TestUserHelpers.kitchen()));
     }
 
     public static CreateMenuItemResponse mapCreateMenuItemResponse(ResultActions createMenuItemResultActions) throws UnsupportedEncodingException, JsonProcessingException {
@@ -51,7 +51,7 @@ public class MenuItemApiHelper {
 
     public static ResultActions sendDeleteMenuItemRequest(MockMvc mockMvc, Long id) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.delete("/menuItems/" + id)
-                .with(CustomSecurityMockMvcRequestPostProcessors.kitchen()));
+                .with(TestUserHelpers.kitchen()));
     }
 
 }

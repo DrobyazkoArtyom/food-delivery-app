@@ -3,10 +3,13 @@ package ru.drobyazko.fooddeliveryservice.catalogue.api;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.drobyazko.fooddeliveryservice.catalogue.application.MenuItemService;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.CreateMenuItem;
+import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.DeleteMenuItem;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.MenuItem;
+import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.CustomUserDetails;
 
 import java.util.List;
 
@@ -22,13 +25,15 @@ public class MenuItemController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    CreateMenuItemResponse createMenuItem(@RequestBody @Valid CreateMenuItemRequest createMenuItemRequest) {
+    CreateMenuItemResponse createMenuItem(@RequestBody @Valid CreateMenuItemRequest createMenuItemRequest,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
         CreateMenuItem createMenuItem =
                 new CreateMenuItem(
                         createMenuItemRequest.kitchenId(),
                         createMenuItemRequest.name(),
                         createMenuItemRequest.description(),
-                        createMenuItemRequest.price());
+                        createMenuItemRequest.price(),
+                        userDetails.getId());
         MenuItem menuItem = menuItemService.createMenuItem(createMenuItem);
         return new CreateMenuItemResponse(
                 menuItem.getId(),
@@ -66,7 +71,8 @@ public class MenuItemController {
     //TODO: should probably implement a tombstone system instead of straight up deleting MenuItems from database
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteMenuItem(@PathVariable("id") Long id) {
-        menuItemService.deleteMenuItem(id);
+    public void deleteMenuItem(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        DeleteMenuItem deleteMenuItem = new DeleteMenuItem(id, userDetails.getId());
+        menuItemService.deleteMenuItem(deleteMenuItem);
     }
 }

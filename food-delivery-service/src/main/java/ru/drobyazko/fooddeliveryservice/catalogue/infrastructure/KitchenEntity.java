@@ -8,6 +8,7 @@ public class KitchenEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Long userId;
     @Column(nullable = false)
     private String name;
     @Column(nullable = false)
@@ -16,13 +17,18 @@ public class KitchenEntity {
     protected KitchenEntity() {
     }
 
-    public KitchenEntity(String name, String address) {
+    public KitchenEntity(Long userId, String name, String address) {
+        this.userId = userId;
         this.name = name;
         this.address = address;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public Long getUserId() {
+        return userId;
     }
 
     public String getName() {

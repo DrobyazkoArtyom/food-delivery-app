@@ -10,7 +10,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import ru.drobyazko.fooddeliveryservice.security.*;
+import ru.drobyazko.fooddeliveryservice.security.api.LoginUserRequest;
+import ru.drobyazko.fooddeliveryservice.security.api.LoginUserResponse;
+import ru.drobyazko.fooddeliveryservice.security.api.RegisterUserRequest;
+import ru.drobyazko.fooddeliveryservice.security.api.RegisterUserResponse;
+import ru.drobyazko.fooddeliveryservice.security.infrastructure.Authority;
 
 import java.util.Set;
 

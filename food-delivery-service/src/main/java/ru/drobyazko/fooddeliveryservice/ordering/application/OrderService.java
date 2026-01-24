@@ -1,13 +1,10 @@
 package ru.drobyazko.fooddeliveryservice.ordering.application;
 
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.MenuItem;
-import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.PlaceOrder;
-import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.MenuItemStock;
-import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.Order;
-import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.OrderItem;
+import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.*;
 import ru.drobyazko.fooddeliveryservice.ordering.infrastructure.OrderEntity;
 import ru.drobyazko.fooddeliveryservice.ordering.infrastructure.OrderItemEntity;
 import ru.drobyazko.fooddeliveryservice.ordering.infrastructure.OrderItemRepository;
@@ -30,8 +27,6 @@ public class OrderService {
         this.menuItemService = menuItemService;
     }
 
-    //TODO: i need to look at all other methods and see if they need to be transactional
-    //TODO: also need to read up and decide on transaction isolations and problems they address
     @Transactional
     public Order placeOrder(PlaceOrder order) {
         OrderEntity orderEntity = new OrderEntity(order.userId());
@@ -61,8 +56,11 @@ public class OrderService {
         return new Order(orderEntity.getId(), orderEntity.getUserId(), orderItems);
     }
 
-    public Order getOrder(Long id) {
-        OrderEntity orderEntity = orderRepository.findById(id).orElseThrow();
+    //TODO: this should only be possible by user or a kitchen that relates to this order through menuItems
+    // ^ (do kitchens even need to be able to do this operation?)
+    @Transactional(readOnly = true)
+    public Order getOrder(GetOrder getOrder) {
+        OrderEntity orderEntity = orderRepository.findByIdAndUserId(getOrder.id(), getOrder.userId()).orElseThrow();
         Set<OrderItem> orderItems = new HashSet<>();
         for (OrderItemEntity orderItemEntity : orderItemRepository.getOrderItemEntitiesByOrderEntity(orderEntity)) {
             OrderItem orderItem = new OrderItem(

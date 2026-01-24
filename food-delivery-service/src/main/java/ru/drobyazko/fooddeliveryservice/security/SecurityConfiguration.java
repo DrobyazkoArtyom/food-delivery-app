@@ -1,15 +1,14 @@
-package ru.drobyazko.fooddeliveryservice;
+package ru.drobyazko.fooddeliveryservice.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import org.springframework.security.web.SecurityFilterChain;
-import ru.drobyazko.fooddeliveryservice.security.Authority;
+import ru.drobyazko.fooddeliveryservice.security.infrastructure.Authority;
 
 @Configuration
 @EnableWebSecurity

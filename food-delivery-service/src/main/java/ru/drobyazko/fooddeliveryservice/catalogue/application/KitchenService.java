@@ -2,7 +2,9 @@ package ru.drobyazko.fooddeliveryservice.catalogue.application;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.CreateKitchen;
+import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.DeleteKitchen;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.Kitchen;
 import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.KitchenEntity;
 import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.KitchenNotFoundException;
@@ -19,17 +21,20 @@ public class KitchenService {
         this.repository = repository;
     }
 
+    @Transactional
     public Kitchen createKitchen(CreateKitchen createKitchen) {
-        KitchenEntity kitchenEntity = new KitchenEntity(createKitchen.name(), createKitchen.address());
+        KitchenEntity kitchenEntity = new KitchenEntity(createKitchen.userId(), createKitchen.name(), createKitchen.address());
         kitchenEntity = repository.save(kitchenEntity);
         return new Kitchen(kitchenEntity.getId(), kitchenEntity.getName(), kitchenEntity.getAddress());
     }
 
+    @Transactional(readOnly = true)
     public Kitchen getKitchen(Long id) {
         KitchenEntity kitchenEntity = repository.findById(id).orElseThrow(KitchenNotFoundException::new);
         return new Kitchen(kitchenEntity.getId(), kitchenEntity.getName(), kitchenEntity.getAddress());
     }
 
+    @Transactional(readOnly = true)
     public List<Kitchen> getAllKitchens() {
         List<KitchenEntity> kitchenEntities = repository.findAll();
         return kitchenEntities.stream()
@@ -37,7 +42,8 @@ public class KitchenService {
                 .toList();
     }
 
-    public void deleteKitchen(Long id) {
-        repository.deleteById(id);
+    @Transactional
+    public void deleteKitchen(DeleteKitchen deleteKitchen) {
+        repository.deleteByIdAndUserId(deleteKitchen.id(), deleteKitchen.userId());
     }
 }

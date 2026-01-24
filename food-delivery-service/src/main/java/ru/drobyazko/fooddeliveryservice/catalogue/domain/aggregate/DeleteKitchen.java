@@ -1,4 +1,4 @@
 package ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate;
 
-public record CreateKitchen(Long userId, String name, String address) {
+public record DeleteKitchen(Long id, Long userId) {
 }

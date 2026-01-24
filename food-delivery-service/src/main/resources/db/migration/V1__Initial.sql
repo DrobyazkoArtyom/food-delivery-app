@@ -1,6 +1,7 @@
 CREATE TABLE kitchens
 (
     id      BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id BIGINT  NOT NULL,
     name    VARCHAR NOT NULL,
     address VARCHAR NOT NULL
 );
@@ -15,7 +16,8 @@ CREATE TABLE menu_items
     hidden      BOOLEAN NOT NULL
 );
 
-CREATE TABLE customer_orders
+-- maybe this should have a composite key instead of id primary key
+CREATE TABLE order_users
 (
     id      BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     user_id BIGINT NOT NULL
@@ -24,7 +26,7 @@ CREATE TABLE customer_orders
 CREATE TABLE order_items
 (
     id           BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    order_id     BIGINT  NOT NULL REFERENCES customer_orders (id),
+    order_id     BIGINT  NOT NULL REFERENCES order_users (id),
     menu_item_id BIGINT  NOT NULL,
     name         VARCHAR NOT NULL,
     description  VARCHAR,
@@ -40,6 +42,9 @@ CREATE TABLE users
     password VARCHAR(500) NOT NULL,
     enabled  boolean      NOT NULL
 );
+
+ALTER TABLE kitchens ADD CONSTRAINT fk_kitchens_users FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE order_users ADD CONSTRAINT fk_orders_users FOREIGN KEY (user_id) REFERENCES users(id);
 
 CREATE TABLE authorities
 (

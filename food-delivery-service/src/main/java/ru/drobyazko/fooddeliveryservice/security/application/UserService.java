@@ -1,7 +1,10 @@
-package ru.drobyazko.fooddeliveryservice.security;
+package ru.drobyazko.fooddeliveryservice.security.application;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.RegisterUser;
+import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.User;
+import ru.drobyazko.fooddeliveryservice.security.infrastructure.*;
 
 @Service
 public class UserService {

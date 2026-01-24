@@ -1,12 +1,13 @@
 package ru.drobyazko.fooddeliveryservice;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -22,8 +23,13 @@ class MenuItemIT {
     @Autowired
     private MockMvc mockMvc;
 
+    @BeforeEach
+    void setupUsers() throws Exception {
+        TestUserHelpers.RegisterDefaultUsers(mockMvc);
+    }
+
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenIHaveCreatedAKitchen_WhenITryToCreateAMenuItem() throws Exception {
         CreateKitchenRequest createKitchenRequest =
                 new CreateKitchenRequest("test", "test");
@@ -56,7 +62,7 @@ class MenuItemIT {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenICreatedAMenuItem_WhenITryToGetAMenuItem() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
         CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(mockMvc, createKitchenRequest);
@@ -84,7 +90,7 @@ class MenuItemIT {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenICreatedAFewMenuItems_WhenITryToGetKitchenMenu() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
         CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(mockMvc, createKitchenRequest);
@@ -117,7 +123,7 @@ class MenuItemIT {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenICreatedAMenuItem_WhenITryToDeleteIt() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
         CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(mockMvc, createKitchenRequest);

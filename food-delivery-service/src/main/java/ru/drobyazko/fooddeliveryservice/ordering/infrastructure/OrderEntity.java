@@ -3,7 +3,7 @@ package ru.drobyazko.fooddeliveryservice.ordering.infrastructure;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "customer_orders")
+@Table(name = "order_users")
 public class OrderEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

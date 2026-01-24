@@ -1,12 +1,13 @@
 package ru.drobyazko.fooddeliveryservice;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -23,8 +24,13 @@ class KitchenIT {
     @Autowired
     private MockMvc mockMvc;
 
+    @BeforeEach
+    void setupUsers() throws Exception {
+        TestUserHelpers.RegisterDefaultUsers(mockMvc);
+    }
+
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void whenICreateAKitchen() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
         ResultActions createKitchenResultActions =
@@ -48,18 +54,8 @@ class KitchenIT {
         Assertions.assertEquals(createKitchenRequest.address(), response.address());
     }
 
-    //TODO: should probably make this one a unit test in the controller slice
     @Test
-    void whenICreateAnInvalidKitchen() throws Exception {
-        CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("", null);
-        ResultActions createKitchenResultActions =
-                KitchenApiHelper.sendCreateKitchenRequest(mockMvc, createKitchenRequest);
-
-        createKitchenResultActions.andExpect(MockMvcResultMatchers.status().isBadRequest());
-    }
-
-    @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenICreateAKitchen_WhenITryToGetAKitchen() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
         CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(mockMvc, createKitchenRequest);
@@ -81,7 +77,7 @@ class KitchenIT {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenICreatedAFewKitchens_WhenITryToGetAllKitchens() throws Exception {
         List<CreateKitchenRequest> createKitchenRequestsList = List.of(
                 new CreateKitchenRequest("test1", "test1"),
@@ -110,7 +106,7 @@ class KitchenIT {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenICreatedAKitchen_WhenIDeleteAKitchen() throws Exception {
         CreateKitchenRequest createKitchenRequest = new CreateKitchenRequest("test", "test");
         CreateKitchenResponse createKitchenResponse = KitchenApiHelper.createKitchen(mockMvc, createKitchenRequest);

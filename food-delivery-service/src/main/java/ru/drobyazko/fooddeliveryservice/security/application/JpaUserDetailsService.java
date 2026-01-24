@@ -1,11 +1,12 @@
-package ru.drobyazko.fooddeliveryservice.security;
+package ru.drobyazko.fooddeliveryservice.security.application;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.CustomUserDetails;
+import ru.drobyazko.fooddeliveryservice.security.infrastructure.*;
 
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +31,6 @@ public class JpaUserDetailsService implements UserDetailsService {
         Set<Authority> authoritySet = authorityEntitySet.stream()
                 .map(authorityEntity -> Authority.valueOf(authorityEntity.getAuthorityId().getAuthority()))
                 .collect(Collectors.toSet());
-        return new User(username, userEntity.getPassword(), authoritySet);
+        return new CustomUserDetails(userEntity.getId(), username, userEntity.getPassword(), authoritySet);
     }
 }

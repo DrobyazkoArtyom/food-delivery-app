@@ -1,4 +1,4 @@
-package ru.drobyazko.fooddeliveryservice.security;
+package ru.drobyazko.fooddeliveryservice.security.api;
 
 import java.util.Collection;
 

@@ -1,12 +1,14 @@
 package ru.drobyazko.fooddeliveryservice;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -30,8 +32,13 @@ class OrderIT {
     @Autowired
     private MockMvc mockMvc;
 
+    @BeforeEach
+    void setupUsers() throws Exception {
+        TestUserHelpers.RegisterDefaultUsers(mockMvc);
+    }
+
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenIHaveMenuItemStocks_WhenITryToPlaceAnOrder() throws Exception {
         CreateKitchenResponse createKitchenResponse =
                 KitchenApiHelper.createKitchen(mockMvc, new CreateKitchenRequest("test", "test"));
@@ -66,7 +73,7 @@ class OrderIT {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenIHavePlacedAnOrder_WhenITryToGetAnOrder() throws Exception {
         CreateKitchenResponse createKitchenResponse =
                 KitchenApiHelper.createKitchen(mockMvc, new CreateKitchenRequest("testName", "testAddress"));

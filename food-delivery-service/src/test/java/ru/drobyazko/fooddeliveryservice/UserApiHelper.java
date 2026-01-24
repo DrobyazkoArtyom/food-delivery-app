@@ -6,10 +6,10 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import ru.drobyazko.fooddeliveryservice.security.LoginUserRequest;
-import ru.drobyazko.fooddeliveryservice.security.LoginUserResponse;
-import ru.drobyazko.fooddeliveryservice.security.RegisterUserRequest;
-import ru.drobyazko.fooddeliveryservice.security.RegisterUserResponse;
+import ru.drobyazko.fooddeliveryservice.security.api.LoginUserRequest;
+import ru.drobyazko.fooddeliveryservice.security.api.LoginUserResponse;
+import ru.drobyazko.fooddeliveryservice.security.api.RegisterUserRequest;
+import ru.drobyazko.fooddeliveryservice.security.api.RegisterUserResponse;
 
 import java.io.UnsupportedEncodingException;
 
