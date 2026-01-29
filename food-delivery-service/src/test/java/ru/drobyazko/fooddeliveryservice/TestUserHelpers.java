@@ -23,7 +23,6 @@ public class TestUserHelpers {
         return SecurityMockMvcRequestPostProcessors.httpBasic(TestUsers.ADMIN.getUsername(), TestUsers.ADMIN.getPassword());
     }
 
-    //TODO:
     public static void RegisterDefaultUsers(MockMvc mockMvc) throws Exception {
         RegisterUserRequest registerUserRequest =
                 new RegisterUserRequest(TestUsers.USER.getUsername(),

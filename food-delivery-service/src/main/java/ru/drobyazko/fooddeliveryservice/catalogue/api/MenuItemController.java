@@ -68,7 +68,6 @@ public class MenuItemController {
                 .toList();
     }
 
-    //TODO: should probably implement a tombstone system instead of straight up deleting MenuItems from database
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteMenuItem(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {

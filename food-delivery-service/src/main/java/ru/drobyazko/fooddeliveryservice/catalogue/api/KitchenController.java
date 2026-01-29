@@ -13,7 +13,11 @@ import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.CustomUserDeta
 
 import java.util.List;
 
-//TODO: add caching
+// TODO: add caching
+// while adding caching here is a good idea because this endpoints are gonna be hit very often
+// in a real project we should really think about if we actually need caching
+// having a good monitoring system could really help make an educated decision, so see next line
+// TODO: research and try to connect this project to a monitoring system
 @RestController
 @RequestMapping("/kitchens")
 public class KitchenController {

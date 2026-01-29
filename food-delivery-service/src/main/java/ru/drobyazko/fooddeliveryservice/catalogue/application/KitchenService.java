@@ -9,6 +9,7 @@ import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.Kitchen;
 import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.KitchenEntity;
 import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.KitchenNotFoundException;
 import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.KitchenRepository;
+import ru.drobyazko.fooddeliveryservice.exceptions.PermissionDeniedException;
 
 import java.util.List;
 
@@ -44,6 +45,10 @@ public class KitchenService {
 
     @Transactional
     public void deleteKitchen(DeleteKitchen deleteKitchen) {
-        repository.deleteByIdAndUserId(deleteKitchen.id(), deleteKitchen.userId());
+        KitchenEntity kitchenEntity = repository.findById(deleteKitchen.id()).orElseThrow(KitchenNotFoundException::new);
+        if (!kitchenEntity.getUserId().equals(deleteKitchen.userId())) {
+            throw new PermissionDeniedException();
+        }
+        repository.delete(kitchenEntity);
     }
 }

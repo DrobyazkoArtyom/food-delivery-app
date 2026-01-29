@@ -7,6 +7,7 @@ import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.CreateMenuIte
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.DeleteMenuItem;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.MenuItem;
 import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.*;
+import ru.drobyazko.fooddeliveryservice.exceptions.PermissionDeniedException;
 
 import java.util.List;
 
@@ -24,8 +25,11 @@ public class MenuItemService {
     @Transactional
     public MenuItem createMenuItem(CreateMenuItem createMenuItem) {
         KitchenEntity kitchenEntity =
-                kitchenRepository.findByIdAndUserId(createMenuItem.kitchenId(), createMenuItem.userId())
-                        .orElseThrow(KitchenNotFoundException::new);
+                kitchenRepository.findById(createMenuItem.kitchenId()).orElseThrow(KitchenNotFoundException::new);
+        if (!kitchenEntity.getUserId().equals(createMenuItem.userId())) {
+            throw new PermissionDeniedException();
+        }
+
         MenuItemEntity menuItemEntity =
                 new MenuItemEntity(
                         kitchenEntity,
@@ -68,13 +72,14 @@ public class MenuItemService {
                 .toList();
     }
 
+    //TODO: should probably implement a tombstone system instead of straight up deleting MenuItems from database
     @Transactional
     public void deleteMenuItem(DeleteMenuItem deleteMenuItem) {
-        //TODO: not sure if we should throw, maybe just log that we could not delete this menuitem
-        MenuItemEntity menuItemEntity = menuItemRepository.findById(deleteMenuItem.id()).orElseThrow();
-        if (menuItemEntity.getKitchenEntity().getUserId().equals(deleteMenuItem.userId())) {
-            menuItemRepository.deleteById(deleteMenuItem.id());
+        MenuItemEntity menuItemEntity =
+                menuItemRepository.findById(deleteMenuItem.id()).orElseThrow(MenuItemNotFoundException::new);
+        if (!menuItemEntity.getKitchenEntity().getUserId().equals(deleteMenuItem.userId())) {
+            throw new PermissionDeniedException();
         }
+        menuItemRepository.deleteById(deleteMenuItem.id());
     }
-
 }

@@ -6,5 +6,6 @@ import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.MenuItemStock;
 
 import java.util.Set;
 
-public record PlaceOrderRequest(@Valid @NotNull Set<MenuItemStock> menuItemStocks) {
+public record PlaceOrderRequest(@Valid @NotNull Long kitchenId,
+                                @Valid @NotNull Set<MenuItemStock> menuItemStocks) {
 }

@@ -15,8 +15,8 @@ public class PostgreSQLContainerConfiguration {
     }
 
     @Bean
-    DynamicPropertyRegistrar testContainersPropertyRegistrar(PostgreSQLContainer postgreSQLContainer) {
-        return registry ->  {
+    DynamicPropertyRegistrar postgreSQLPropertyRegistrar(PostgreSQLContainer postgreSQLContainer) {
+        return registry -> {
             registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
             registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
             registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
