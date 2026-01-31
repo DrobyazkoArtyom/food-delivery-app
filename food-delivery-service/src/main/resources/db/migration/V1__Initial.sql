@@ -50,3 +50,20 @@ CREATE TABLE order_items
     unit_price   NUMERIC NOT NULL,
     quantity     INTEGER NOT NULL
 );
+
+CREATE TABLE order_status
+(
+    id     BIGINT PRIMARY KEY,
+    order_status VARCHAR NOT NULL
+);
+
+CREATE TABLE order_status_history
+(
+    id        BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    order_id  BIGINT NOT NULL REFERENCES orders (id),
+    order_status_id BIGINT NOT NULL REFERENCES order_status (id)
+);
+
+INSERT INTO order_status (id, order_status)
+VALUES (1, 'CREATED'),
+       (2, 'FINISHED');

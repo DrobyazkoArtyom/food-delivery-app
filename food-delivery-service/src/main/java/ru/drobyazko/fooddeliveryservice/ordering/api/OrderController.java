@@ -28,7 +28,7 @@ public class OrderController {
         PlaceOrder placeOrder =
                 new PlaceOrder(userDetails.getId(), placeOrderRequest.kitchenId(), placeOrderRequest.menuItemStocks());
         Order order = orderService.placeOrder(placeOrder);
-        return new PlaceOrderResponse(order.getId(), order.getOrderItems());
+        return new PlaceOrderResponse(order.id(), order.orderItems());
     }
 
     @GetMapping("/{id}")
@@ -36,7 +36,7 @@ public class OrderController {
                                      @AuthenticationPrincipal CustomUserDetails userDetails) {
         GetOrder getOrder = new GetOrder(id, userDetails.getId());
         Order order = orderService.getOrder(getOrder);
-        return new GetOrderResponse(order.getId(), order.getOrderItems());
+        return new GetOrderResponse(order.id(), order.orderItems(), order.orderStatusHistory());
     }
 
     //TODO: publishOrderStatus

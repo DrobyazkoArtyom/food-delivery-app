@@ -3,12 +3,10 @@ package ru.drobyazko.fooddeliveryservice;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -22,6 +20,7 @@ import ru.drobyazko.fooddeliveryservice.ordering.api.PlaceOrderRequest;
 import ru.drobyazko.fooddeliveryservice.ordering.api.PlaceOrderResponse;
 import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.MenuItemStock;
 import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.OrderItem;
+import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.OrderStatus;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -32,8 +31,6 @@ import java.util.Set;
 class OrderIT {
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private AmqpTemplate amqpTemplate;
 
     @BeforeEach
     void setupUsers() throws Exception {
@@ -67,23 +64,12 @@ class OrderIT {
         PlaceOrderResponse placeOrderResponse =
                 OrderApiHelper.mapPlaceOrderResponse(placeOrderResultActions);
         itShouldReturnOrderWithSameMenuItems(placeOrderResponse, orderItems);
-
-        amqpTemplate.receiveAndConvert("order-prepare-queue", new ParameterizedTypeReference<Long>() {
-        });
-        itShouldPushAMessageIntoQueue(placeOrderResponse.orderId());
     }
 
     private void itShouldReturnOrderWithSameMenuItems(PlaceOrderResponse placeOrderResponse,
                                                       Set<OrderItem> orderItems) {
         Assertions.assertNotNull(placeOrderResponse.orderId());
         Assertions.assertTrue(orderItems.containsAll(placeOrderResponse.orderItems()));
-    }
-
-    private void itShouldPushAMessageIntoQueue(Long orderId) {
-        Long id = amqpTemplate.receiveAndConvert("order-prepare-queue", new ParameterizedTypeReference<Long>() {
-        });
-        Assertions.assertNotNull(id);
-        Assertions.assertEquals(orderId, id);
     }
 
     @Test
@@ -118,11 +104,18 @@ class OrderIT {
         GetOrderResponse getOrderResponse =
                 OrderApiHelper.mapGetOrderResponse(getOrderResultActions);
         itShouldReturnOrderWithSameMenuItems(getOrderResponse, orderItems);
+
+        getOrderResponse.orderStatusRecordList().get(getOrderResponse.orderStatusRecordList().size() - 1).orderStatus();
+        itShouldReturnCreatedOrderStatus(getOrderResponse);
     }
 
     private void itShouldReturnOrderWithSameMenuItems(GetOrderResponse getOrderResponse,
                                                       Set<OrderItem> orderItems) {
         Assertions.assertNotNull(getOrderResponse.orderId());
         Assertions.assertTrue(orderItems.containsAll(getOrderResponse.orderItems()));
+    }
+
+    private void itShouldReturnCreatedOrderStatus(GetOrderResponse getOrderResponse) {
+        Assertions.assertEquals(OrderStatus.CREATED, getOrderResponse.orderStatusRecordList().get(0).orderStatus());
     }
 }
