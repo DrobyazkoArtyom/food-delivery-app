@@ -60,10 +60,11 @@ CREATE TABLE order_status
 CREATE TABLE order_status_history
 (
     id        BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    -- fields below might need to be a composite key?
     order_id  BIGINT NOT NULL REFERENCES orders (id),
     order_status_id BIGINT NOT NULL REFERENCES order_status (id)
 );
 
 INSERT INTO order_status (id, order_status)
 VALUES (1, 'CREATED'),
-       (2, 'FINISHED');
+       (2, 'PREPARED');

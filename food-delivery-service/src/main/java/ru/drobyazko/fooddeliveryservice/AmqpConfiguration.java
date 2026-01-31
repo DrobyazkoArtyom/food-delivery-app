@@ -10,18 +10,24 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AmqpConfiguration {
     @Bean
-    public Queue orderPrepareQueue() {
-        return new Queue("order-prepare-queue");
-    }
-
-    @Bean
     public Exchange orderExchange() {
-        return new DirectExchange("order");
+        return new TopicExchange("order");
     }
 
     @Bean
-    public Binding orderBinding(Queue orderPrepareQueue, Exchange orderExchange) {
-        return BindingBuilder.bind(orderPrepareQueue).to(orderExchange).with("order.created").noargs();
+    public Declarables queues() {
+        return new Declarables(
+                new Queue("order-prepare-queue"),
+                new Queue("order-finish-queue")
+        );
+    }
+
+    @Bean
+    public Declarables bindings() {
+        return new Declarables(
+                new Binding("order-prepare-queue", Binding.DestinationType.QUEUE, "order", "order.created.#", null),
+                new Binding("order-finish-queue", Binding.DestinationType.QUEUE, "order", "order.prepared", null)
+        );
     }
 
     @Bean

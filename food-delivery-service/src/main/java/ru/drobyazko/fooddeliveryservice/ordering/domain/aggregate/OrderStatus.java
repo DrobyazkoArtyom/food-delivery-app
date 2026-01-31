@@ -8,7 +8,7 @@ import java.util.Map;
 // needs constant synchronization with database (see order_status table)
 public enum OrderStatus {
     CREATED(1L),
-    FINISHED(2L);
+    PREPARED(2L);
 
     private static final Map<Long, OrderStatus> idToOrderStatusMap = new HashMap<>();
 

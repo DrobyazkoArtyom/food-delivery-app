@@ -105,8 +105,10 @@ class OrderIT {
                 OrderApiHelper.mapGetOrderResponse(getOrderResultActions);
         itShouldReturnOrderWithSameMenuItems(getOrderResponse, orderItems);
 
-        getOrderResponse.orderStatusRecordList().get(getOrderResponse.orderStatusRecordList().size() - 1).orderStatus();
-        itShouldReturnCreatedOrderStatus(getOrderResponse);
+        // TODO: while this works there are better ways. We can try using Awaitility (3rd party lib for waiting on async ops)
+        // or we change this when we add real time notifications, then we can try to obtain a ws connection here
+        Thread.sleep(5_000L);
+        itShouldReturnCreatedAndPreparedOrderStatuses(getOrderResponse);
     }
 
     private void itShouldReturnOrderWithSameMenuItems(GetOrderResponse getOrderResponse,
@@ -115,7 +117,8 @@ class OrderIT {
         Assertions.assertTrue(orderItems.containsAll(getOrderResponse.orderItems()));
     }
 
-    private void itShouldReturnCreatedOrderStatus(GetOrderResponse getOrderResponse) {
+    private void itShouldReturnCreatedAndPreparedOrderStatuses(GetOrderResponse getOrderResponse) {
         Assertions.assertEquals(OrderStatus.CREATED, getOrderResponse.orderStatusRecordList().get(0).orderStatus());
+        Assertions.assertEquals(OrderStatus.PREPARED, getOrderResponse.orderStatusRecordList().get(1).orderStatus());
     }
 }

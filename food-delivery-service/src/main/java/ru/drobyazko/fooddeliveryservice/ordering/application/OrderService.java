@@ -72,7 +72,7 @@ public class OrderService {
         OrderStatusRecord orderStatusRecord =
                 new OrderStatusRecord(orderStatusRecordEntity.getId(), OrderStatus.CREATED);
 
-        amqpTemplate.convertAndSend("order.created", orderEntity.getId());
+        amqpTemplate.convertAndSend("order.created." + placeOrder.kitchenId(), orderEntity.getId());
         return new Order(orderEntity.getId(), orderEntity.getUserId(), orderItems, List.of(orderStatusRecord));
     }
 
