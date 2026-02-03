@@ -26,7 +26,9 @@ public class OrderController {
     public PlaceOrderResponse placeOrder(@RequestBody @Valid PlaceOrderRequest placeOrderRequest,
                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
         PlaceOrder placeOrder =
-                new PlaceOrder(userDetails.getId(), placeOrderRequest.kitchenId(), placeOrderRequest.menuItemStocks());
+                new PlaceOrder(userDetails.getId(),
+                        placeOrderRequest.kitchenId(),
+                        placeOrderRequest.menuItemStocks());
         Order order = orderService.placeOrder(placeOrder);
         return new PlaceOrderResponse(order.id(), order.orderItems());
     }

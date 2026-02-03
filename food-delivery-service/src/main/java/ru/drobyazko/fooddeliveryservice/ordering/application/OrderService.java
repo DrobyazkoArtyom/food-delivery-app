@@ -1,6 +1,7 @@
 package ru.drobyazko.fooddeliveryservice.ordering.application;
 
 import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,7 +73,8 @@ public class OrderService {
         OrderStatusRecord orderStatusRecord =
                 new OrderStatusRecord(orderStatusRecordEntity.getId(), OrderStatus.CREATED);
 
-        amqpTemplate.convertAndSend("order.created." + placeOrder.kitchenId(), orderEntity.getId());
+        amqpTemplate.convertAndSend("order.created." + placeOrder.kitchenId(),
+                new OrderCreatedMessage(orderEntity.getId(), placeOrder.userId(), orderItems));
         return new Order(orderEntity.getId(), orderEntity.getUserId(), orderItems, List.of(orderStatusRecord));
     }
 

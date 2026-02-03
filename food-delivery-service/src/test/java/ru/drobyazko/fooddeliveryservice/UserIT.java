@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -20,13 +20,13 @@ import java.util.Set;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@Import({MockMvcConfiguration.class, PostgreSQLContainerConfiguration.class})
+@Import({PostgreSQLContainerConfiguration.class, MockMvcConfiguration.class})
 class UserIT {
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenIAmAUser_WhenITryToRegister() throws Exception {
         RegisterUserRequest registerUserRequest =
                 new RegisterUserRequest("test", "{noop}test", Set.of(Authority.ADMIN));
@@ -49,7 +49,7 @@ class UserIT {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenIAmAUser_WhenITryToLogin() throws Exception {
         RegisterUserRequest registerUserRequest = new RegisterUserRequest("test", "{noop}test", Set.of(Authority.ADMIN));
         ResultActions registerUserResponseResultActions = UserApiHelper.sendRegisterUserRequest(mockMvc, registerUserRequest);

@@ -24,6 +24,7 @@ public class SecurityConfiguration {
                                 .requestMatchers("/menuItems/**").hasAuthority(Authority.KITCHEN.getAuthority())
                                 .requestMatchers(HttpMethod.GET, "/orders/**").authenticated()
                                 .requestMatchers("/orders/**").hasAuthority(Authority.USER.getAuthority())
+                                .requestMatchers("/ws").hasAuthority(Authority.USER.getAuthority())
                                 .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults());
         return http.build();
