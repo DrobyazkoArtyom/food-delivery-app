@@ -35,7 +35,6 @@ public class OrderService {
         this.amqpTemplate = amqpTemplate;
     }
 
-    // TODO: need to add retries
     @Transactional
     public Order placeOrder(PlaceOrder placeOrder) {
         OrderEntity orderEntity = new OrderEntity(placeOrder.userId(), placeOrder.kitchenId());

@@ -30,7 +30,7 @@ CREATE TABLE menu_items
     name        VARCHAR NOT NULL,
     description VARCHAR,
     price       NUMERIC NOT NULL,
-    hidden      BOOLEAN NOT NULL
+    is_deleted  BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE orders
@@ -53,15 +53,15 @@ CREATE TABLE order_items
 
 CREATE TABLE order_status
 (
-    id     BIGINT PRIMARY KEY,
+    id           BIGINT PRIMARY KEY,
     order_status VARCHAR NOT NULL
 );
 
 CREATE TABLE order_status_history
 (
-    id        BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id              BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     -- fields below might need to be a composite key?
-    order_id  BIGINT NOT NULL REFERENCES orders (id),
+    order_id        BIGINT NOT NULL REFERENCES orders (id),
     order_status_id BIGINT NOT NULL REFERENCES order_status (id)
 );
 

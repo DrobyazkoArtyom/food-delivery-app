@@ -47,7 +47,8 @@ public class MenuItemService {
 
     @Transactional(readOnly = true)
     public MenuItem getMenuItem(Long id) {
-        MenuItemEntity menuItemEntity = menuItemRepository.findById(id).orElseThrow(MenuItemNotFoundException::new);
+        MenuItemEntity menuItemEntity =
+                menuItemRepository.findByIdAndIsDeletedFalse(id).orElseThrow(MenuItemNotFoundException::new);
         return new MenuItem(
                 menuItemEntity.getId(),
                 menuItemEntity.getKitchenEntity().getId(),
@@ -60,7 +61,7 @@ public class MenuItemService {
     public List<MenuItem> getKitchenMenu(Long kitchenId) {
         KitchenEntity kitchenEntity = kitchenRepository.getReferenceById(kitchenId);
         return menuItemRepository
-                .findByKitchenEntity(kitchenEntity)
+                .findByKitchenEntityAndIsDeletedFalse(kitchenEntity)
                 .stream()
                 .map(menuItemEntity ->
                         new MenuItem(
@@ -72,14 +73,14 @@ public class MenuItemService {
                 .toList();
     }
 
-    //TODO: should probably implement a tombstone system instead of straight up deleting MenuItems from database
     @Transactional
-    public void deleteMenuItem(DeleteMenuItem deleteMenuItem) {
+    public void markMenuItemAsDeleted(DeleteMenuItem deleteMenuItem) {
         MenuItemEntity menuItemEntity =
                 menuItemRepository.findById(deleteMenuItem.id()).orElseThrow(MenuItemNotFoundException::new);
         if (!menuItemEntity.getKitchenEntity().getUserId().equals(deleteMenuItem.userId())) {
             throw new PermissionDeniedException();
         }
-        menuItemRepository.deleteById(deleteMenuItem.id());
+        menuItemEntity.setDeleted(true);
+        menuItemRepository.save(menuItemEntity);
     }
 }

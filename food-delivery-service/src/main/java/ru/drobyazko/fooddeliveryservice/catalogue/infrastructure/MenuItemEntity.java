@@ -20,7 +20,7 @@ public class MenuItemEntity {
     @Column(nullable = false, columnDefinition = "NUMERIC")
     private BigDecimal price;
     @Column(nullable = false)
-    private Boolean hidden = false;
+    private Boolean isDeleted = false;
 
     protected MenuItemEntity() {
     }
@@ -52,7 +52,11 @@ public class MenuItemEntity {
         return price;
     }
 
-    public Boolean getHidden() {
-        return hidden;
+    public Boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
     }
 }

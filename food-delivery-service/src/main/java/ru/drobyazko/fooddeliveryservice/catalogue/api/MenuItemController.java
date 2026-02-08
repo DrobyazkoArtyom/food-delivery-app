@@ -72,6 +72,6 @@ public class MenuItemController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteMenuItem(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
         DeleteMenuItem deleteMenuItem = new DeleteMenuItem(id, userDetails.getId());
-        menuItemService.deleteMenuItem(deleteMenuItem);
+        menuItemService.markMenuItemAsDeleted(deleteMenuItem);
     }
 }

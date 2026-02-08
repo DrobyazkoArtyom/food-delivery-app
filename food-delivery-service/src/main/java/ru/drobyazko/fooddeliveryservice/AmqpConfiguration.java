@@ -6,6 +6,7 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.boot.amqp.autoconfigure.RabbitTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.retry.RetryTemplate;
 
 @Configuration
 public class AmqpConfiguration {
@@ -41,6 +42,7 @@ public class AmqpConfiguration {
             rabbitTemplate.setExchange("order");
             rabbitTemplate.setMessageConverter(jacksonJsonMessageConverter);
             rabbitTemplate.setChannelTransacted(true);
+            rabbitTemplate.setRetryTemplate(new RetryTemplate());
         };
     }
 }
