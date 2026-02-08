@@ -40,16 +40,4 @@ public class OrderController {
         Order order = orderService.getOrder(getOrder);
         return new GetOrderResponse(order.id(), order.orderItems(), order.orderStatusHistory());
     }
-
-    //TODO: publishOrderStatus
-    // might be a rabbitmq listener?
-
-//    @PostMapping
-//    public Order createOrder(CreateOrderRequest createOrderRequest) {
-//        return orderService.createOrder(createOrderRequest);
-//    }
-
-//    public void cancelOrder() {
-//
-//    }
 }

@@ -20,6 +20,8 @@ public class UserController {
         this.userService = userService;
     }
 
+    // TODO: this endpoint should allow only registering users with Authority.USER
+    //  so there is a need for registerKitchen and registerAnyoneEndpoint (only accessible by admins)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RegisterUserResponse registerUser(@RequestBody @Valid RegisterUserRequest registerUserRequest) {

@@ -2,6 +2,8 @@ package ru.drobyazko.fooddeliveryservice.catalogue.api;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -11,12 +13,10 @@ import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.Kitchen;
 import ru.drobyazko.fooddeliveryservice.catalogue.application.KitchenService;
 import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.CustomUserDetails;
 
-import java.util.List;
-
 // TODO: add caching
-// while adding caching here is a good idea because this endpoints are gonna be hit very often
-// in a real project we should really think about if we actually need caching
-// having a good monitoring system could really help make an educated decision, so see next line
+//  while adding caching here is a good idea because this endpoints are gonna be hit very often
+//  in a real project we should really think about if we actually need caching
+//  having a good monitoring system could really help make an educated decision, so see next line
 // TODO: research and try to connect this project to a monitoring system
 @RestController
 @RequestMapping("/kitchens")
@@ -44,14 +44,10 @@ public class KitchenController {
         return new GetKitchenResponse(kitchen.id(), kitchen.name(), kitchen.address());
     }
 
-    //TODO: should add paging
     @GetMapping
-    public List<GetKitchenResponse> getAllKitchens() {
-        List<Kitchen> kitchens = kitchenService.getAllKitchens();
-        return kitchens.stream()
-                .map(kitchen ->
-                        new GetKitchenResponse(kitchen.id(), kitchen.name(), kitchen.address()))
-                .toList();
+    public Page<GetKitchenResponse> getAllKitchens(Pageable pageable) {
+        Page<Kitchen> kitchens = kitchenService.getAllKitchens(pageable);
+        return kitchens.map(kitchen -> new GetKitchenResponse(kitchen.id(), kitchen.name(), kitchen.address()));
     }
 
     @DeleteMapping("/{id}")

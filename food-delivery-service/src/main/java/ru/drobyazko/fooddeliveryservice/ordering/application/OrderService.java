@@ -1,7 +1,6 @@
 package ru.drobyazko.fooddeliveryservice.ordering.application;
 
 import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,11 +66,7 @@ public class OrderService {
             orderItemRepository.save(orderItemEntity);
         }
 
-        OrderStatusRecordEntity orderStatusRecordEntity =
-                new OrderStatusRecordEntity(orderEntity.getId(), OrderStatus.CREATED.getId());
-        orderStatusRecordEntity = orderStatusHistoryRepository.save(orderStatusRecordEntity);
-        OrderStatusRecord orderStatusRecord =
-                new OrderStatusRecord(orderStatusRecordEntity.getId(), OrderStatus.CREATED);
+        OrderStatusRecord orderStatusRecord = saveOrderStatus(orderEntity.getId(), OrderStatus.CREATED.getId());
 
         amqpTemplate.convertAndSend("order.created." + placeOrder.kitchenId(),
                 new OrderCreatedMessage(orderEntity.getId(), placeOrder.userId(), orderItems));
@@ -107,6 +102,15 @@ public class OrderService {
                 .toList();
 
         return new Order(orderEntity.getId(), orderEntity.getUserId(), orderItems, orderStatusHistory);
+    }
+
+    @Transactional
+    public OrderStatusRecord saveOrderStatus(Long orderId, Long orderStatusId) {
+        OrderStatusRecordEntity orderStatusRecordEntity =
+                new OrderStatusRecordEntity(orderId, orderStatusId);
+        orderStatusRecordEntity = orderStatusHistoryRepository.save(orderStatusRecordEntity);
+        return new OrderStatusRecord(orderStatusRecordEntity.getId(),
+                OrderStatus.valueFromId(orderStatusRecordEntity.getOrderStatusId()));
     }
 
 }

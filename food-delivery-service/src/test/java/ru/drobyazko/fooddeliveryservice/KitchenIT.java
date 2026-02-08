@@ -89,9 +89,9 @@ class KitchenIT {
                 KitchenApiHelper.sendGetAllKitchensRequest(mockMvc);
         getAllKitchensResultActions.andExpect(MockMvcResultMatchers.status().isOk());
 
-        List<GetKitchenResponse> getAllKitchenResponse =
+        TestPageResponse<GetKitchenResponse> getAllKitchenResponse =
                 KitchenApiHelper.mapGetAllKitchensResponse(getAllKitchensResultActions);
-        itShouldReturnAListOfSameKitchens(createKitchenRequestsList, getAllKitchenResponse);
+        itShouldReturnAListOfSameKitchens(createKitchenRequestsList, getAllKitchenResponse.getContent());
     }
 
     private void itShouldReturnAListOfSameKitchens(

@@ -9,9 +9,9 @@ import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.OrderCreatedMe
 import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.OrderPreparedMessage;
 
 // TODO: make this a separate application
-// This should be a separate app that allows kitchens to get orders, accept/decline them, see their pending orders and
-// complete them. Some operations are better be done locally (seeing pending orders in this application is going to be
-// bad for performance since it aggregates orders related to ALL kitchens in its database)
+//  This should be a separate app that allows kitchens to get orders, accept/decline them, see their pending orders and
+//  complete them. Some operations are better be done locally (seeing pending orders in this application is going to be
+//  bad for performance since it aggregates orders related to ALL kitchens in its database)
 @Service
 public class KitchenWorkerService {
     private final AmqpTemplate amqpTemplate;

@@ -2,6 +2,7 @@ package ru.drobyazko.fooddeliveryservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -11,7 +12,6 @@ import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenResponse;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.GetKitchenResponse;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 public class KitchenApiHelper {
     public static ResultActions sendCreateKitchenRequest(MockMvc mockMvc, CreateKitchenRequest createKitchenRequest) throws Exception {
@@ -41,9 +41,9 @@ public class KitchenApiHelper {
         return mockMvc.perform(MockMvcRequestBuilders.get("/kitchens"));
     }
 
-    public static List<GetKitchenResponse> mapGetAllKitchensResponse(ResultActions resultActions) throws UnsupportedEncodingException, JsonProcessingException {
-        return new ObjectMapper().readValue(resultActions.andReturn().getResponse().getContentAsString(),
-                new TypeReference<List<GetKitchenResponse>>() {
+    public static TestPageResponse<GetKitchenResponse> mapGetAllKitchensResponse(ResultActions resultActions) throws UnsupportedEncodingException, JsonProcessingException {
+        return new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(resultActions.andReturn().getResponse().getContentAsString(),
+                new TypeReference<TestPageResponse<GetKitchenResponse>>() {
                 });
     }
 

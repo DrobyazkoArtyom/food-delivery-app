@@ -1,6 +1,8 @@
 package ru.drobyazko.fooddeliveryservice.catalogue.application;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.CreateKitchen;
@@ -41,6 +43,12 @@ public class KitchenService {
         return kitchenEntities.stream()
                 .map(kitchen -> new Kitchen(kitchen.getId(), kitchen.getName(), kitchen.getAddress()))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Kitchen> getAllKitchens(Pageable pageable) {
+        Page<KitchenEntity> kitchenEntities = repository.findAll(pageable);
+        return kitchenEntities.map(kitchen -> new Kitchen(kitchen.getId(), kitchen.getName(), kitchen.getAddress()));
     }
 
     @Transactional
