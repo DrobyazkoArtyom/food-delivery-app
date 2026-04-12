@@ -1,4 +1,4 @@
-package ru.drobyazko.fooddeliveryservice;
+package ru.drobyazko.fooddeliveryservice.security;
 
 public enum TestUsers {
     USER("user", "user"),

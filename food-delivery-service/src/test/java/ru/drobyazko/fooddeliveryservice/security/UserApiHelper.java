@@ -1,4 +1,4 @@
-package ru.drobyazko.fooddeliveryservice;
+package ru.drobyazko.fooddeliveryservice.security;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

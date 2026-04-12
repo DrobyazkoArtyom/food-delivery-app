@@ -1,4 +1,4 @@
-package ru.drobyazko.fooddeliveryservice;
+package ru.drobyazko.fooddeliveryservice.catalogue;
 
 import java.util.List;
 

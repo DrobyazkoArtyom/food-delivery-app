@@ -1,4 +1,4 @@
-package ru.drobyazko.fooddeliveryservice;
+package ru.drobyazko.fooddeliveryservice.ordering;
 
 import org.apache.tomcat.websocket.Constants;
 import org.jspecify.annotations.Nullable;
@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
+import ru.drobyazko.fooddeliveryservice.security.TestUsers;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;

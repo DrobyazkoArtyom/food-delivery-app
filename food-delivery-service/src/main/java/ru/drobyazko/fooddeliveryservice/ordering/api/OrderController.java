@@ -1,5 +1,6 @@
 package ru.drobyazko.fooddeliveryservice.ordering.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ public class OrderController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public PlaceOrderResponse placeOrder(@RequestBody @Valid PlaceOrderRequest placeOrderRequest,
-                                         @AuthenticationPrincipal CustomUserDetails userDetails) {
+                                         @AuthenticationPrincipal CustomUserDetails userDetails) throws JsonProcessingException {
         PlaceOrder placeOrder =
                 new PlaceOrder(userDetails.getId(),
                         placeOrderRequest.kitchenId(),

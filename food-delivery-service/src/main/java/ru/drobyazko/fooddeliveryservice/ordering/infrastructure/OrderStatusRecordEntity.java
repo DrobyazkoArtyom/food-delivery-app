@@ -11,14 +11,14 @@ public class OrderStatusRecordEntity {
     @Column(nullable = false)
     private Long orderId;
     @Column(nullable = false)
-    private Long orderStatusId;
+    private String orderStatus;
 
     protected OrderStatusRecordEntity() {
     }
 
-    public OrderStatusRecordEntity(Long orderId, Long orderStatusId) {
+    public OrderStatusRecordEntity(Long orderId, String orderStatus) {
         this.orderId = orderId;
-        this.orderStatusId = orderStatusId;
+        this.orderStatus = orderStatus;
     }
 
     public Long getId() {
@@ -29,7 +29,7 @@ public class OrderStatusRecordEntity {
         return orderId;
     }
 
-    public Long getOrderStatusId() {
-        return orderStatusId;
+    public String getOrderStatus() {
+        return orderStatus;
     }
 }

@@ -1,10 +1,15 @@
 package ru.drobyazko.fooddeliveryservice.ordering.application;
 
-import org.springframework.amqp.core.AmqpTemplate;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.MenuItem;
+import ru.drobyazko.fooddeliveryservice.eventing.infrastructure.EventEntity;
+import ru.drobyazko.fooddeliveryservice.eventing.infrastructure.EventRepository;
 import ru.drobyazko.fooddeliveryservice.exceptions.PermissionDeniedException;
 import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.*;
 import ru.drobyazko.fooddeliveryservice.ordering.infrastructure.*;
@@ -12,6 +17,7 @@ import ru.drobyazko.fooddeliveryservice.catalogue.application.MenuItemService;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -19,31 +25,32 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
+    private final EventRepository eventRepository;
     private final MenuItemService menuItemService;
-    private final AmqpTemplate amqpTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     @Autowired
     public OrderService(OrderRepository orderRepository,
                         OrderItemRepository orderItemRepository,
                         OrderStatusHistoryRepository orderStatusHistoryRepository,
-                        MenuItemService menuItemService,
-                        AmqpTemplate amqpTemplate) {
+                        EventRepository eventRepository,
+                        MenuItemService menuItemService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.orderStatusHistoryRepository = orderStatusHistoryRepository;
+        this.eventRepository = eventRepository;
         this.menuItemService = menuItemService;
-        this.amqpTemplate = amqpTemplate;
     }
 
-    @Transactional
-    public Order placeOrder(PlaceOrder placeOrder) {
+    @Transactional(rollbackFor = JsonProcessingException.class)
+    public Order placeOrder(PlaceOrder placeOrder) throws JsonProcessingException {
         OrderEntity orderEntity = new OrderEntity(placeOrder.userId(), placeOrder.kitchenId());
         orderEntity = orderRepository.save(orderEntity);
 
         Set<OrderItem> orderItems = new HashSet<>();
         for (MenuItemStock menuItemStock : placeOrder.menuItemStocks()) {
             // TODO: a good optimization especially in the scenario where this is a call to a separate service somewhere on the network
-            // ^ is batching all the menuitemids and getting them all in one call
+            //  is batching all the menuitemids and getting them all in one call
             MenuItem menuItem = menuItemService.getMenuItem(menuItemStock.menuItemId());
             if (!menuItem.getKitchenId().equals(placeOrder.kitchenId())) {
                 throw new InvalidOrderException();
@@ -64,11 +71,15 @@ public class OrderService {
                     menuItemStock.quantity());
             orderItemRepository.save(orderItemEntity);
         }
+        if (orderItems.isEmpty()) {
+            throw new InvalidOrderException();
+        }
 
-        OrderStatusRecord orderStatusRecord = saveOrderStatus(orderEntity.getId(), OrderStatus.CREATED.getId());
-
-        amqpTemplate.convertAndSend("order.created." + placeOrder.kitchenId(),
+        OrderStatusRecord orderStatusRecord = publishOrderStatus(orderEntity.getId(), OrderStatus.CREATED.getStatus());
+        String payload = new ObjectMapper().writeValueAsString(
                 new OrderCreatedMessage(orderEntity.getId(), placeOrder.userId(), orderItems));
+        EventEntity eventEntity = new EventEntity("orderCreated", payload);
+        eventRepository.save(eventEntity);
         return new Order(orderEntity.getId(), orderEntity.getUserId(), orderItems, List.of(orderStatusRecord));
     }
 
@@ -76,6 +87,7 @@ public class OrderService {
     // ^ (do kitchens even need to be able to do this operation?)
     @Transactional(readOnly = true)
     public Order getOrder(GetOrder getOrder) {
+        // TODO: throw orderNotFoundException
         OrderEntity orderEntity = orderRepository.findById(getOrder.id()).orElseThrow();
         if (!orderEntity.getUserId().equals(getOrder.userId())) {
             throw new PermissionDeniedException();
@@ -95,8 +107,8 @@ public class OrderService {
         List<OrderStatusRecordEntity> orderStatusEntityHistory = orderStatusHistoryRepository.findByOrderIdOrderById(getOrder.id());
         List<OrderStatusRecord> orderStatusHistory = orderStatusEntityHistory.stream()
                 .map(orderStatusRecordEntity -> new OrderStatusRecord(
-                        orderStatusRecordEntity.getId(),
-                        OrderStatus.valueFromId(orderStatusRecordEntity.getOrderStatusId()))
+                        orderStatusRecordEntity.getOrderId(),
+                        orderStatusRecordEntity.getOrderStatus())
                 )
                 .toList();
 
@@ -104,12 +116,15 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderStatusRecord saveOrderStatus(Long orderId, Long orderStatusId) {
+    public OrderStatusRecord publishOrderStatus(Long orderId, String orderStatus) {
+        // TODO: for kafka path we should also check if order even exists
         OrderStatusRecordEntity orderStatusRecordEntity =
-                new OrderStatusRecordEntity(orderId, orderStatusId);
-        orderStatusRecordEntity = orderStatusHistoryRepository.save(orderStatusRecordEntity);
-        return new OrderStatusRecord(orderStatusRecordEntity.getId(),
-                OrderStatus.valueFromId(orderStatusRecordEntity.getOrderStatusId()));
+                new OrderStatusRecordEntity(orderId, orderStatus);
+        Optional<OrderStatusRecordEntity> statusHistory = orderStatusHistoryRepository.findByOrderIdAndOrderStatus(orderId, orderStatus);
+        if (statusHistory.isEmpty()) {
+            orderStatusHistoryRepository.save(orderStatusRecordEntity);
+        }
+        return new OrderStatusRecord(orderId, orderStatus);
     }
 
 }

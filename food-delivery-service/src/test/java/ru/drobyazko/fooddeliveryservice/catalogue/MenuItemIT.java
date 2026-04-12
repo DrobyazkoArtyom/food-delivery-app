@@ -1,4 +1,4 @@
-package ru.drobyazko.fooddeliveryservice;
+package ru.drobyazko.fooddeliveryservice.catalogue;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +9,10 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import ru.drobyazko.fooddeliveryservice.security.TestUserHelpers;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.*;
+import ru.drobyazko.fooddeliveryservice.configuration.MockMvcConfiguration;
+import ru.drobyazko.fooddeliveryservice.configuration.PostgreSQLContainerConfiguration;
 
 import java.math.BigDecimal;
 import java.util.List;

@@ -51,20 +51,21 @@ CREATE TABLE order_items
     quantity     INTEGER NOT NULL
 );
 
-CREATE TABLE order_status
-(
-    id           BIGINT PRIMARY KEY,
-    order_status VARCHAR NOT NULL
-);
-
 CREATE TABLE order_status_history
 (
-    id              BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id           BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     -- fields below might need to be a composite key?
-    order_id        BIGINT NOT NULL REFERENCES orders (id),
-    order_status_id BIGINT NOT NULL REFERENCES order_status (id)
+    order_id     BIGINT  NOT NULL REFERENCES orders (id),
+    order_status VARCHAR NOT NULL,
+    UNIQUE (order_id, order_status)
 );
 
-INSERT INTO order_status (id, order_status)
-VALUES (1, 'CREATED'),
-       (2, 'PREPARED');
+CREATE TABLE events
+(
+    id      BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    type    VARCHAR NOT NULL,
+    payload VARCHAR NOT NULL
+);
+
+--CREATE
+--PUBLICATION outbox FOR TABLE events;

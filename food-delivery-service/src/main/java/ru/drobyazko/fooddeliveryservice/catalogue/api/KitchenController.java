@@ -2,6 +2,8 @@ package ru.drobyazko.fooddeliveryservice.catalogue.api;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -45,6 +47,10 @@ public class KitchenController {
     }
 
     @GetMapping
+    // TODO: need to finally add unit tests to this project, should test as much specific behaviours as possible
+    //  for example if caching works as i expect in this method
+    // TODO: how do we cache evict pageable's?
+    @Cacheable("kitchens")
     public Page<GetKitchenResponse> getAllKitchens(Pageable pageable) {
         Page<Kitchen> kitchens = kitchenService.getAllKitchens(pageable);
         return kitchens.map(kitchen -> new GetKitchenResponse(kitchen.id(), kitchen.name(), kitchen.address()));
@@ -52,6 +58,7 @@ public class KitchenController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @CacheEvict(value = "myCache", allEntries = true)
     public void deleteKitchen(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
         DeleteKitchen deleteKitchen = new DeleteKitchen(id, userDetails.getId());
         kitchenService.deleteKitchen(deleteKitchen);

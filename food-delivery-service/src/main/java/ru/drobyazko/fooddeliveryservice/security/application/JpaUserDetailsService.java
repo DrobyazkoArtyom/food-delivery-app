@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.Authority;
 import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.CustomUserDetails;
 import ru.drobyazko.fooddeliveryservice.security.infrastructure.*;
 

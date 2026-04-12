@@ -1,7 +1,7 @@
 package ru.drobyazko.fooddeliveryservice.ordering.application;
 
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import ru.drobyazko.fooddeliveryservice.ordering.domain.aggregate.OrderPreparedMessage;
@@ -25,10 +25,11 @@ public class OrderPreparedListener {
         this.userRepository = userRepository;
     }
 
-    @RabbitListener(queues = "order-finish-queue")
-    public void finalizeOrder(OrderPreparedMessage orderPreparedMessage) {
-        OrderStatusRecord orderStatusRecord =
-                orderService.saveOrderStatus(orderPreparedMessage.orderId(), OrderStatus.PREPARED.getId());
+    @KafkaListener(id = "orderFinalizer", topics = "orderPrepared")
+    public void finalizeOrderKafka(OrderPreparedMessage orderPreparedMessage) {
+        OrderStatusRecord orderStatusRecord = orderService.publishOrderStatus(orderPreparedMessage.orderId(), OrderStatus.PREPARED.getStatus());
+        // TODO: instead of orElseThrow() we should send this message to dlt
+        //  and we also do not really need to send userId over kafka. just find it using orderId
         UserEntity userEntity = userRepository.findById(orderPreparedMessage.userId()).orElseThrow();
         simpMessagingTemplate.convertAndSendToUser(userEntity.getUsername(), "/topic/order", new Object());
     }

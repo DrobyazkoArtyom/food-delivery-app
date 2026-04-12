@@ -1,21 +1,28 @@
-package ru.drobyazko.fooddeliveryservice;
+package ru.drobyazko.fooddeliveryservice.ordering;
 
 import org.junit.jupiter.api.*;
-import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import ru.drobyazko.fooddeliveryservice.security.TestUserHelpers;
+import ru.drobyazko.fooddeliveryservice.catalogue.KitchenApiHelper;
+import ru.drobyazko.fooddeliveryservice.catalogue.MenuItemApiHelper;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenRequest;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenResponse;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateMenuItemRequest;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateMenuItemResponse;
+import ru.drobyazko.fooddeliveryservice.configuration.KafkaContainerConfiguration;
+import ru.drobyazko.fooddeliveryservice.configuration.MockMvcConfiguration;
+import ru.drobyazko.fooddeliveryservice.configuration.PostgreSQLContainerConfiguration;
 import ru.drobyazko.fooddeliveryservice.ordering.api.GetOrderResponse;
 import ru.drobyazko.fooddeliveryservice.ordering.api.PlaceOrderRequest;
 import ru.drobyazko.fooddeliveryservice.ordering.api.PlaceOrderResponse;
@@ -30,18 +37,18 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@Import({PostgreSQLContainerConfiguration.class, RabbitMQContainerConfiguration.class, MockMvcConfiguration.class})
+@Import({PostgreSQLContainerConfiguration.class, KafkaContainerConfiguration.class, MockMvcConfiguration.class})
 class OrderIT {
     private static final Long DEFAULT_AWAIT_MESSAGE_TIMEOUT = 10L;
     private final MockMvc mockMvc;
-    private final AmqpAdmin amqpAdmin;
+    private final KafkaAdmin kafkaAdmin;
     @LocalServerPort
     private String port;
 
     @Autowired
-    public OrderIT(MockMvc mockMvc, AmqpAdmin amqpAdmin) {
+    public OrderIT(MockMvc mockMvc, KafkaAdmin kafkaAdmin) {
         this.mockMvc = mockMvc;
-        this.amqpAdmin = amqpAdmin;
+        this.kafkaAdmin = kafkaAdmin;
     }
 
     @BeforeEach
@@ -50,13 +57,18 @@ class OrderIT {
     }
 
     @AfterEach
-    void purgeAMQPqueues() {
-        amqpAdmin.purgeQueue("order-prepare-queue");
+    void deleteKafkaTopics() {
+        kafkaAdmin.deleteTopics("orderCreated", "orderPrepared");
     }
 
     @Test
     @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenIHaveMenuItemStocks_WhenITryToPlaceAnOrder() throws Exception {
+        kafkaAdmin.createOrModifyTopics(TopicBuilder.name("orderCreated").partitions(1).replicas(1).build());
+        kafkaAdmin.createOrModifyTopics(TopicBuilder.name("orderPrepared").partitions(1).replicas(1).build());
+
+        Thread.sleep(5000L);
+
         CountDownLatch countDownLatchUntilMessageArrived = new CountDownLatch(1);
         StompSession stompSession = WebSocketHelper.connectToWebSocket(port);
         WebSocketHelper.subscribeToWebSocket(stompSession, "/user/topic/order", countDownLatchUntilMessageArrived::countDown);
@@ -142,7 +154,7 @@ class OrderIT {
     }
 
     private void itShouldReturnCreatedAndPreparedOrderStatuses(GetOrderResponse getOrderResponse) {
-        Assertions.assertEquals(OrderStatus.CREATED, getOrderResponse.orderStatusRecordList().get(0).orderStatus());
-        Assertions.assertEquals(OrderStatus.PREPARED, getOrderResponse.orderStatusRecordList().get(1).orderStatus());
+        Assertions.assertEquals(OrderStatus.CREATED.getStatus(), getOrderResponse.orderStatusRecordList().get(0).orderStatus());
+        Assertions.assertEquals(OrderStatus.PREPARED.getStatus(), getOrderResponse.orderStatusRecordList().get(1).orderStatus());
     }
 }

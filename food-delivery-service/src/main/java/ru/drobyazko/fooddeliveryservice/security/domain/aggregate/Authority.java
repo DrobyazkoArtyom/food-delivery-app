@@ -1,4 +1,4 @@
-package ru.drobyazko.fooddeliveryservice.security.infrastructure;
+package ru.drobyazko.fooddeliveryservice.security.domain.aggregate;
 
 import org.springframework.security.core.GrantedAuthority;
 

@@ -1,10 +1,11 @@
-package ru.drobyazko.fooddeliveryservice;
+package ru.drobyazko.fooddeliveryservice.ordering;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import ru.drobyazko.fooddeliveryservice.security.TestUserHelpers;
 import ru.drobyazko.fooddeliveryservice.ordering.api.GetOrderResponse;
 import ru.drobyazko.fooddeliveryservice.ordering.api.PlaceOrderRequest;
 import ru.drobyazko.fooddeliveryservice.ordering.api.PlaceOrderResponse;

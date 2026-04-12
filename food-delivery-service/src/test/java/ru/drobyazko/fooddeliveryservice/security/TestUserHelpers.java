@@ -1,9 +1,9 @@
-package ru.drobyazko.fooddeliveryservice;
+package ru.drobyazko.fooddeliveryservice.security;
 
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
-import ru.drobyazko.fooddeliveryservice.security.infrastructure.Authority;
+import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.Authority;
 import ru.drobyazko.fooddeliveryservice.security.api.RegisterUserRequest;
 
 import java.util.Set;

@@ -1,4 +1,4 @@
-package ru.drobyazko.fooddeliveryservice;
+package ru.drobyazko.fooddeliveryservice.security;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -10,11 +10,13 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import ru.drobyazko.fooddeliveryservice.configuration.MockMvcConfiguration;
+import ru.drobyazko.fooddeliveryservice.configuration.PostgreSQLContainerConfiguration;
 import ru.drobyazko.fooddeliveryservice.security.api.LoginUserRequest;
 import ru.drobyazko.fooddeliveryservice.security.api.LoginUserResponse;
 import ru.drobyazko.fooddeliveryservice.security.api.RegisterUserRequest;
 import ru.drobyazko.fooddeliveryservice.security.api.RegisterUserResponse;
-import ru.drobyazko.fooddeliveryservice.security.infrastructure.Authority;
+import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.Authority;
 
 import java.util.Set;
 

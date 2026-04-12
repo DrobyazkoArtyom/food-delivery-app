@@ -8,7 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import org.springframework.security.web.SecurityFilterChain;
-import ru.drobyazko.fooddeliveryservice.security.infrastructure.Authority;
+import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.Authority;
 
 @Configuration
 @EnableWebSecurity
@@ -17,6 +17,9 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http.authorizeHttpRequests(authorize ->
                         authorize
+                                .requestMatchers("/swagger-ui/**").permitAll()
+                                .requestMatchers("/v3/**").permitAll()
+                                .requestMatchers("/error/**").permitAll()
                                 .requestMatchers("/users/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/kitchens/**").permitAll()
                                 .requestMatchers("/kitchens/**").hasAuthority(Authority.KITCHEN.getAuthority())
