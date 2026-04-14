@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import ru.drobyazko.fooddeliveryservice.configuration.OutboxProperties;
 import ru.drobyazko.fooddeliveryservice.eventing.infrastructure.EventEntity;
 import ru.drobyazko.fooddeliveryservice.eventing.infrastructure.EventRepository;
 
@@ -17,21 +18,23 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class PollingOutboxService {
-    private static final int BATCH_SIZE = 100;
-    private static final int PROCESSING_DELAY = 1;
+    private final OutboxProperties outboxProperties;
     private final EventRepository eventRepository;
     private final KafkaSenderService kafkaSenderService;
     private static final Logger logger = LoggerFactory.getLogger(PollingOutboxService.class);
 
     @Autowired
-    public PollingOutboxService(EventRepository eventRepository, KafkaSenderService kafkaSenderService) {
+    public PollingOutboxService(OutboxProperties outboxProperties,
+                                EventRepository eventRepository,
+                                KafkaSenderService kafkaSenderService) {
+        this.outboxProperties = outboxProperties;
         this.eventRepository = eventRepository;
         this.kafkaSenderService = kafkaSenderService;
     }
 
-    @Scheduled(fixedDelay = PROCESSING_DELAY, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelayString = "${app.outbox.processing-delay-seconds}", timeUnit = TimeUnit.SECONDS)
     public void processOutboxEvents() {
-        Page<EventEntity> eventEntities = eventRepository.findAllByOrderById(Pageable.ofSize(BATCH_SIZE));
+        Page<EventEntity> eventEntities = eventRepository.findAllByOrderById(Pageable.ofSize(outboxProperties.batchSize()));
         List<CompletableFuture<Long>> eventFutures = new ArrayList<>();
         for (EventEntity eventEntity : eventEntities) {
             var future = kafkaSenderService.send(eventEntity).handle((result, ex) -> {
