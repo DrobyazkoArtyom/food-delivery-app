@@ -1,6 +1,7 @@
 package ru.drobyazko.fooddeliveryservice.exceptions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.validation.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,7 +18,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.notFound().build();
     }
 
-    @ExceptionHandler({InvalidOrderException.class, JsonProcessingException.class})
+    @ExceptionHandler({InvalidOrderException.class, JsonProcessingException.class, ValidationException.class})
     public ResponseEntity<String> handleResourceBadRequestExceptions() {
         return ResponseEntity.badRequest().build();
     }
@@ -26,4 +27,5 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleResourceForbiddenExceptions() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
 }

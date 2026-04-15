@@ -5,21 +5,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import ru.drobyazko.fooddeliveryservice.configuration.KafkaContainerConfiguration;
 import ru.drobyazko.fooddeliveryservice.security.TestUserHelpers;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.*;
 import ru.drobyazko.fooddeliveryservice.configuration.MockMvcConfiguration;
 import ru.drobyazko.fooddeliveryservice.configuration.PostgreSQLContainerConfiguration;
+import ru.drobyazko.fooddeliveryservice.security.UserApiHelper;
+import ru.drobyazko.fooddeliveryservice.security.api.RegisterUserRequest;
+import ru.drobyazko.fooddeliveryservice.security.domain.aggregate.Authority;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@Import({PostgreSQLContainerConfiguration.class, MockMvcConfiguration.class})
+// TODO: Catalogue domain does not care about kafka, so we do not actually need to run KafkaContainer
+@Import({PostgreSQLContainerConfiguration.class, MockMvcConfiguration.class, KafkaContainerConfiguration.class})
 class MenuItemIT {
     @Autowired
     private MockMvc mockMvc;
@@ -144,5 +151,98 @@ class MenuItemIT {
                 MenuItemApiHelper.sendGetMenuItemRequest(mockMvc, createMenuItemResponse.id());
 
         getMenuItemResultActions.andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void givenInvalidData_WhenITryToCreateAMenuItem_ThenBadRequest() throws Exception {
+        CreateKitchenResponse createKitchenResponse =
+                KitchenApiHelper.createKitchen(mockMvc, new CreateKitchenRequest("test", "test"));
+
+        CreateMenuItemRequest createMenuItemRequest =
+                new CreateMenuItemRequest(createKitchenResponse.id(), "   ", "test", null);
+
+        MenuItemApiHelper.sendCreateMenuItemRequest(mockMvc, createMenuItemRequest)
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void givenNonexistentKitchen_WhenITryToGetKitchenMenu_ThenNotFound() throws Exception {
+        MenuItemApiHelper.sendGetMenuRequest(mockMvc, 999999L)
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void givenKitchenOwnedByAnotherKitchenUser_WhenITryToCreateAMenuItem_ThenForbidden() throws Exception {
+        CreateKitchenResponse createKitchenResponse =
+                KitchenApiHelper.createKitchen(mockMvc, new CreateKitchenRequest("test", "test"));
+
+        RegisterUserRequest registerKitchenRequest =
+                new RegisterUserRequest("another-kitchen",
+                        TestUserHelpers.PASSWORD_NOOP_PREFIX + "another-kitchen",
+                        Set.of(Authority.KITCHEN));
+        UserApiHelper.sendRegisterUserRequest(mockMvc, registerKitchenRequest);
+        CreateMenuItemRequest createMenuItemRequest =
+                new CreateMenuItemRequest(createKitchenResponse.id(), "test", "test", new BigDecimal(1));
+
+        MenuItemApiHelper.sendCreateMenuItemRequest(mockMvc,
+                        createMenuItemRequest,
+                        SecurityMockMvcRequestPostProcessors.httpBasic("another-kitchen", "another-kitchen"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void givenMenuItemOwnedByAnotherKitchenUser_WhenITryToDeleteIt_ThenForbidden() throws Exception {
+        CreateKitchenResponse createKitchenResponse =
+                KitchenApiHelper.createKitchen(mockMvc, new CreateKitchenRequest("test", "test"));
+        CreateMenuItemResponse createMenuItemResponse = MenuItemApiHelper.createMenuItem(
+                mockMvc,
+                new CreateMenuItemRequest(createKitchenResponse.id(), "test", "test", new BigDecimal(1))
+        );
+
+        RegisterUserRequest registerKitchenRequest =
+                new RegisterUserRequest("another-kitchen",
+                        TestUserHelpers.PASSWORD_NOOP_PREFIX + "another-kitchen",
+                        Set.of(Authority.KITCHEN));
+        UserApiHelper.sendRegisterUserRequest(mockMvc, registerKitchenRequest);
+
+        MenuItemApiHelper.sendDeleteMenuItemRequest(mockMvc,
+                        createMenuItemResponse.id(),
+                        SecurityMockMvcRequestPostProcessors.httpBasic("another-kitchen", "another-kitchen"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void givenIDeleteAMenuItem_WhenITryToGetKitchenMenu_ThenDeletedItemIsExcluded() throws Exception {
+        CreateKitchenResponse createKitchenResponse =
+                KitchenApiHelper.createKitchen(mockMvc, new CreateKitchenRequest("test", "test"));
+        CreateMenuItemResponse deletedMenuItemResponse = MenuItemApiHelper.createMenuItem(
+                mockMvc,
+                new CreateMenuItemRequest(createKitchenResponse.id(), "test1", "test1", new BigDecimal(1))
+        );
+        CreateMenuItemResponse remainingMenuItemResponse = MenuItemApiHelper.createMenuItem(
+                mockMvc,
+                new CreateMenuItemRequest(createKitchenResponse.id(), "test2", "test2", new BigDecimal(2))
+        );
+
+        MenuItemApiHelper.sendDeleteMenuItemRequest(mockMvc, deletedMenuItemResponse.id())
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
+
+        ResultActions getMenuResultActions =
+                MenuItemApiHelper.sendGetMenuRequest(mockMvc, createKitchenResponse.id());
+        getMenuResultActions.andExpect(MockMvcResultMatchers.status().isOk());
+
+        List<GetMenuItemResponse> getMenuResponse =
+                MenuItemApiHelper.mapGetMenuResponse(getMenuResultActions);
+
+        Assertions.assertEquals(1, getMenuResponse.size());
+        Assertions.assertEquals(remainingMenuItemResponse.id(), getMenuResponse.get(0).id());
+        Assertions.assertEquals(remainingMenuItemResponse.name(), getMenuResponse.get(0).name());
+        Assertions.assertEquals(remainingMenuItemResponse.description(), getMenuResponse.get(0).description());
+        Assertions.assertEquals(remainingMenuItemResponse.price(), getMenuResponse.get(0).price());
     }
 }

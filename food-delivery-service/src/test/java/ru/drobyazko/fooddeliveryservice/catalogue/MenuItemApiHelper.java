@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.drobyazko.fooddeliveryservice.security.TestUserHelpers;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateMenuItemRequest;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateMenuItemResponse;
@@ -16,9 +17,15 @@ import java.util.List;
 
 public class MenuItemApiHelper {
     public static ResultActions sendCreateMenuItemRequest(MockMvc mockMvc, CreateMenuItemRequest createMenuItemRequest) throws Exception {
+        return sendCreateMenuItemRequest(mockMvc, createMenuItemRequest, TestUserHelpers.kitchen());
+    }
+
+    public static ResultActions sendCreateMenuItemRequest(MockMvc mockMvc,
+                                                          CreateMenuItemRequest createMenuItemRequest,
+                                                          RequestPostProcessor userRequestPostProcessor) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.post("/menuItems")
                 .content(new ObjectMapper().writeValueAsString(createMenuItemRequest))
-                .with(TestUserHelpers.kitchen()));
+                .with(userRequestPostProcessor));
     }
 
     public static CreateMenuItemResponse mapCreateMenuItemResponse(ResultActions createMenuItemResultActions) throws UnsupportedEncodingException, JsonProcessingException {
@@ -51,8 +58,13 @@ public class MenuItemApiHelper {
     }
 
     public static ResultActions sendDeleteMenuItemRequest(MockMvc mockMvc, Long id) throws Exception {
+        return sendDeleteMenuItemRequest(mockMvc, id, TestUserHelpers.kitchen());
+    }
+
+    public static ResultActions sendDeleteMenuItemRequest(MockMvc mockMvc, Long id,
+                                                          RequestPostProcessor userRequestPostProcessor) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.delete("/menuItems/" + id)
-                .with(TestUserHelpers.kitchen()));
+                .with(userRequestPostProcessor));
     }
 
 }

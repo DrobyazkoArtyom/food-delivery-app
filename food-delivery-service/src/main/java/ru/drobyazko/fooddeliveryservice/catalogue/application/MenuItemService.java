@@ -1,8 +1,11 @@
 package ru.drobyazko.fooddeliveryservice.catalogue.application;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.CreateMenuItem;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.DeleteMenuItem;
 import ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate.MenuItem;
@@ -12,6 +15,7 @@ import ru.drobyazko.fooddeliveryservice.exceptions.PermissionDeniedException;
 import java.util.List;
 
 @Service
+@Validated
 public class MenuItemService {
     private final MenuItemRepository menuItemRepository;
     private final KitchenRepository kitchenRepository;
@@ -23,7 +27,7 @@ public class MenuItemService {
     }
 
     @Transactional
-    public MenuItem createMenuItem(CreateMenuItem createMenuItem) {
+    public MenuItem createMenuItem(@Valid CreateMenuItem createMenuItem) {
         KitchenEntity kitchenEntity =
                 kitchenRepository.findById(createMenuItem.kitchenId()).orElseThrow(KitchenNotFoundException::new);
         if (!kitchenEntity.getUserId().equals(createMenuItem.userId())) {
@@ -46,7 +50,7 @@ public class MenuItemService {
     }
 
     @Transactional(readOnly = true)
-    public MenuItem getMenuItem(Long id) {
+    public MenuItem getMenuItem(@NotNull Long id) {
         MenuItemEntity menuItemEntity =
                 menuItemRepository.findByIdAndIsDeletedFalse(id).orElseThrow(MenuItemNotFoundException::new);
         return new MenuItem(
@@ -58,10 +62,11 @@ public class MenuItemService {
     }
 
     @Transactional(readOnly = true)
-    public List<MenuItem> getKitchenMenu(Long kitchenId) {
-        KitchenEntity kitchenEntity = kitchenRepository.getReferenceById(kitchenId);
+    public List<MenuItem> getKitchenMenu(@NotNull Long kitchenId) {
+        KitchenEntity kitchenEntity =
+                kitchenRepository.findById(kitchenId).orElseThrow(KitchenNotFoundException::new);
         return menuItemRepository
-                .findByKitchenEntityAndIsDeletedFalse(kitchenEntity)
+                .findByKitchenEntityAndIsDeletedFalseOrderById(kitchenEntity)
                 .stream()
                 .map(menuItemEntity ->
                         new MenuItem(
@@ -74,7 +79,7 @@ public class MenuItemService {
     }
 
     @Transactional
-    public void markMenuItemAsDeleted(DeleteMenuItem deleteMenuItem) {
+    public void markMenuItemAsDeleted(@Valid DeleteMenuItem deleteMenuItem) {
         MenuItemEntity menuItemEntity =
                 menuItemRepository.findById(deleteMenuItem.id()).orElseThrow(MenuItemNotFoundException::new);
         if (!menuItemEntity.getKitchenEntity().getUserId().equals(deleteMenuItem.userId())) {

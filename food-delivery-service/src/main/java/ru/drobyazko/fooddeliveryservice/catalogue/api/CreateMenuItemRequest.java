@@ -9,5 +9,5 @@ import java.math.BigDecimal;
 public record CreateMenuItemRequest(@NotNull Long kitchenId,
                                     @NotBlank String name,
                                     String description,
-                                    @Positive BigDecimal price) {
+                                    @NotNull @Positive BigDecimal price) {
 }

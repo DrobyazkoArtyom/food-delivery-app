@@ -13,8 +13,6 @@ import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.KitchenNotFound
 import ru.drobyazko.fooddeliveryservice.catalogue.infrastructure.KitchenRepository;
 import ru.drobyazko.fooddeliveryservice.exceptions.PermissionDeniedException;
 
-import java.util.List;
-
 @Service
 public class KitchenService {
     private final KitchenRepository repository;
@@ -35,14 +33,6 @@ public class KitchenService {
     public Kitchen getKitchen(Long id) {
         KitchenEntity kitchenEntity = repository.findById(id).orElseThrow(KitchenNotFoundException::new);
         return new Kitchen(kitchenEntity.getId(), kitchenEntity.getName(), kitchenEntity.getAddress());
-    }
-
-    @Transactional(readOnly = true)
-    public List<Kitchen> getAllKitchens() {
-        List<KitchenEntity> kitchenEntities = repository.findAll();
-        return kitchenEntities.stream()
-                .map(kitchen -> new Kitchen(kitchen.getId(), kitchen.getName(), kitchen.getAddress()))
-                .toList();
     }
 
     @Transactional(readOnly = true)

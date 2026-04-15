@@ -1,4 +1,6 @@
 package ru.drobyazko.fooddeliveryservice.catalogue.domain.aggregate;
 
-public record DeleteMenuItem(Long id, Long userId) {
+import jakarta.validation.constraints.NotNull;
+
+public record DeleteMenuItem(@NotNull Long id, @NotNull Long userId) {
 }

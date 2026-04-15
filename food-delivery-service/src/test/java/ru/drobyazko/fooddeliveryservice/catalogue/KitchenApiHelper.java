@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.drobyazko.fooddeliveryservice.security.TestUserHelpers;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenRequest;
 import ru.drobyazko.fooddeliveryservice.catalogue.api.CreateKitchenResponse;
@@ -15,10 +16,17 @@ import ru.drobyazko.fooddeliveryservice.catalogue.api.GetKitchenResponse;
 import java.io.UnsupportedEncodingException;
 
 public class KitchenApiHelper {
-    public static ResultActions sendCreateKitchenRequest(MockMvc mockMvc, CreateKitchenRequest createKitchenRequest) throws Exception {
+    public static ResultActions sendCreateKitchenRequest(MockMvc mockMvc,
+                                                         CreateKitchenRequest createKitchenRequest) throws Exception {
+        return sendCreateKitchenRequest(mockMvc, createKitchenRequest, TestUserHelpers.kitchen());
+    }
+
+    public static ResultActions sendCreateKitchenRequest(MockMvc mockMvc,
+                                                         CreateKitchenRequest createKitchenRequest,
+                                                         RequestPostProcessor userRequestPostProcessor) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.post("/kitchens")
                 .content(new ObjectMapper().writeValueAsString(createKitchenRequest))
-                .with(TestUserHelpers.kitchen()));
+                .with(userRequestPostProcessor));
     }
 
     public static CreateKitchenResponse mapCreateKitchenResponse(ResultActions resultActions) throws UnsupportedEncodingException, JsonProcessingException {
@@ -49,7 +57,13 @@ public class KitchenApiHelper {
     }
 
     public static ResultActions sendDeleteKitchenRequest(MockMvc mockMvc, Long id) throws Exception {
+        return sendDeleteKitchenRequest(mockMvc, id, TestUserHelpers.kitchen());
+    }
+
+    public static ResultActions sendDeleteKitchenRequest(MockMvc mockMvc,
+                                                         Long id,
+                                                         RequestPostProcessor userRequestPostProcessor) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.delete("/kitchens/" + id)
-                .with(TestUserHelpers.kitchen()));
+                .with(userRequestPostProcessor));
     }
 }
