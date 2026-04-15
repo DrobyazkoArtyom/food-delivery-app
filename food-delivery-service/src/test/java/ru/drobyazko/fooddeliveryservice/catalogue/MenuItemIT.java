@@ -180,9 +180,7 @@ class MenuItemIT {
                 KitchenApiHelper.createKitchen(mockMvc, new CreateKitchenRequest("test", "test"));
 
         RegisterUserRequest registerKitchenRequest =
-                new RegisterUserRequest("another-kitchen",
-                        TestUserHelpers.PASSWORD_NOOP_PREFIX + "another-kitchen",
-                        Set.of(Authority.KITCHEN));
+                new RegisterUserRequest("another-kitchen", "another-kitchen", Set.of(Authority.KITCHEN));
         UserApiHelper.sendRegisterUserRequest(mockMvc, registerKitchenRequest);
         CreateMenuItemRequest createMenuItemRequest =
                 new CreateMenuItemRequest(createKitchenResponse.id(), "test", "test", new BigDecimal(1));
@@ -204,9 +202,7 @@ class MenuItemIT {
         );
 
         RegisterUserRequest registerKitchenRequest =
-                new RegisterUserRequest("another-kitchen",
-                        TestUserHelpers.PASSWORD_NOOP_PREFIX + "another-kitchen",
-                        Set.of(Authority.KITCHEN));
+                new RegisterUserRequest("another-kitchen", "another-kitchen", Set.of(Authority.KITCHEN));
         UserApiHelper.sendRegisterUserRequest(mockMvc, registerKitchenRequest);
 
         MenuItemApiHelper.sendDeleteMenuItemRequest(mockMvc,

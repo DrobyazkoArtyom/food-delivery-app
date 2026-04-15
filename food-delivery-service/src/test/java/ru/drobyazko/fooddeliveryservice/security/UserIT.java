@@ -10,6 +10,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import ru.drobyazko.fooddeliveryservice.configuration.KafkaContainerConfiguration;
 import ru.drobyazko.fooddeliveryservice.configuration.MockMvcConfiguration;
 import ru.drobyazko.fooddeliveryservice.configuration.PostgreSQLContainerConfiguration;
 import ru.drobyazko.fooddeliveryservice.security.api.LoginUserRequest;
@@ -22,7 +23,7 @@ import java.util.Set;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@Import({PostgreSQLContainerConfiguration.class, MockMvcConfiguration.class})
+@Import({PostgreSQLContainerConfiguration.class, MockMvcConfiguration.class, KafkaContainerConfiguration.class})
 class UserIT {
     @Autowired
     private MockMvc mockMvc;
@@ -31,7 +32,7 @@ class UserIT {
     @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenIAmAUser_WhenITryToRegister() throws Exception {
         RegisterUserRequest registerUserRequest =
-                new RegisterUserRequest("test", "{noop}test", Set.of(Authority.ADMIN));
+                new RegisterUserRequest("test", "test", Set.of(Authority.ADMIN));
         ResultActions registerUserResponseResultActions = UserApiHelper.sendRegisterUserRequest(mockMvc, registerUserRequest);
         registerUserResponseResultActions.andExpect(MockMvcResultMatchers.status().isCreated());
         RegisterUserResponse registerUserResponse = UserApiHelper.mapRegisterUserResponse(registerUserResponseResultActions);
@@ -46,14 +47,13 @@ class UserIT {
 
     private void itShouldReturnSameUser(RegisterUserRequest request, RegisterUserResponse response) {
         Assertions.assertEquals(request.username(), response.username());
-        Assertions.assertEquals(request.password(), response.password());
         Assertions.assertEquals(request.authorities(), response.authorities());
     }
 
     @Test
     @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void givenIAmAUser_WhenITryToLogin() throws Exception {
-        RegisterUserRequest registerUserRequest = new RegisterUserRequest("test", "{noop}test", Set.of(Authority.ADMIN));
+        RegisterUserRequest registerUserRequest = new RegisterUserRequest("test", "test", Set.of(Authority.ADMIN));
         ResultActions registerUserResponseResultActions = UserApiHelper.sendRegisterUserRequest(mockMvc, registerUserRequest);
         registerUserResponseResultActions.andExpect(MockMvcResultMatchers.status().isCreated());
         RegisterUserResponse registerUserResponse = UserApiHelper.mapRegisterUserResponse(registerUserResponseResultActions);
@@ -70,6 +70,15 @@ class UserIT {
 
     private void itShouldReturnSameUsername(LoginUserRequest request, LoginUserResponse response) {
         Assertions.assertEquals(request.username(), response.username());
+    }
+
+    @Test
+    @Sql(scripts = "classpath:/TruncateAllTables.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void givenARegisteredUser_whenITryToRegisterSameUsername_ShouldReturnConflictStatus() throws Exception {
+        RegisterUserRequest registerUserRequest = new RegisterUserRequest("test", "test", Set.of(Authority.ADMIN));
+        UserApiHelper.sendRegisterUserRequest(mockMvc, registerUserRequest);
+        ResultActions registerUserResponseResultActions = UserApiHelper.sendRegisterUserRequest(mockMvc, registerUserRequest);
+        registerUserResponseResultActions.andExpect(MockMvcResultMatchers.status().isConflict());
     }
 
 }

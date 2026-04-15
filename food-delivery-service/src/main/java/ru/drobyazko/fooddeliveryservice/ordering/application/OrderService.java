@@ -2,8 +2,6 @@ package ru.drobyazko.fooddeliveryservice.ordering.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +25,6 @@ public class OrderService {
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final EventRepository eventRepository;
     private final MenuItemService menuItemService;
-    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     @Autowired
     public OrderService(OrderRepository orderRepository,
@@ -87,8 +84,7 @@ public class OrderService {
     // ^ (do kitchens even need to be able to do this operation?)
     @Transactional(readOnly = true)
     public Order getOrder(GetOrder getOrder) {
-        // TODO: throw orderNotFoundException
-        OrderEntity orderEntity = orderRepository.findById(getOrder.id()).orElseThrow();
+        OrderEntity orderEntity = orderRepository.findById(getOrder.id()).orElseThrow(OrderNotFoundException::new);
         if (!orderEntity.getUserId().equals(getOrder.userId())) {
             throw new PermissionDeniedException();
         }

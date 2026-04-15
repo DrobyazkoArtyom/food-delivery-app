@@ -2,9 +2,10 @@
 CREATE TABLE users
 (
     id       BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    username VARCHAR(50)  NOT NULL,
+    username VARCHAR(50)  NOT NULL UNIQUE,
     password VARCHAR(500) NOT NULL,
     enabled  boolean      NOT NULL
+
 );
 
 CREATE TABLE authorities
@@ -14,6 +15,15 @@ CREATE TABLE authorities
 );
 
 CREATE UNIQUE INDEX ix_auth_username ON authorities (user_id, authority);
+
+--- todo: should store encrypted password here for prod
+INSERT INTO users (username, password, enabled)
+VALUES ('admin', '{noop}admin', true);
+
+INSERT INTO authorities (user_id, authority)
+SELECT id, 'ADMIN'
+FROM users
+WHERE username = 'admin';
 
 CREATE TABLE kitchens
 (

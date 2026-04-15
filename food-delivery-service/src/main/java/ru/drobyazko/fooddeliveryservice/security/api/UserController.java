@@ -29,7 +29,7 @@ public class UserController {
                 registerUserRequest.password(),
                 registerUserRequest.authorities());
         User user = userService.registerUser(registerUser);
-        return new RegisterUserResponse(user.id(), user.username(), user.password(), user.authorities());
+        return new RegisterUserResponse(user.id(), user.username(), user.authorities());
     }
 
     //TODO: this is for testing purposes and should probably be deleted
